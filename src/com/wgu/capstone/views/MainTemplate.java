@@ -13,20 +13,27 @@ public class MainTemplate {
             head(
                 title("WGU Capstone"),
                 meta().withCharset("utf-8"),
-                link().withRel("shortcut icon").withType("icon/x-icon").withHref("favicon.ico"),
-                link().withRel("stylesheet").withHref("https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"),
-                link().withRel("stylesheet").withHref("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css"),
-                link().withRel("stylesheet").withHref("stylesheet.css")
+                link().withRel("shortcut icon").withType("icon/x-icon").withHref("/favicon.ico"),
+                link().withRel("stylesheet").withHref("/bootstrap.min.css"),
+                link().withRel("stylesheet").withHref("/bootstrap-icons-1.5.0/bootstrap-icons.css"),
+                link().withRel("stylesheet").withHref("/stylesheet.css")
             ),
             TagCreator.body(
                 attrs(".bg-light"),
                 sidebar(route),
                 div(
-                    attrs(".container"),
+                    attrs("#body-container.container"),
                     div(
                         attrs(".row"),
                         div(
-                            attrs(".p-4"),
+                            attrs("#form-wrapper.slide-hidden"),
+                            div(
+                                attrs(".shadow.bg-white.rounded.p-3"),
+                                div(attrs("#form"))
+                            )
+                        ),
+                        div(
+                            attrs("#main-wrapper.p-4"),
                             div(
                                 attrs(".shadow.bg-white.rounded.p-3"),
                                 main
@@ -35,8 +42,17 @@ public class MainTemplate {
                     )
                 )
             ),
-            script().withSrc("https://unpkg.com/htmx.org@1.3.3"),
-            script().withSrc("https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js")
+            script().withSrc("/htmx.min.js"),
+            script().withSrc("/bootstrap.bundle.min.js"),
+            script().withType("module").withSrc("/App.js")
+//            rawHtml("""
+//                   <script type="module">
+//                   import RPGCombatClient from "./App.js";
+//                   window.runGame = function() {
+//                        new RPGCombatClient(null);
+//                   };
+//                   </script>
+//            """ )
         ));
     }
 
@@ -46,7 +62,7 @@ public class MainTemplate {
             a(
                 attrs(".d-flex.align-items-center.me-3.link-dark.text-decoration-none"),
                 img(attrs(".bi.me-2"))
-                    .withSrc("wgu-logo.svg")
+                    .withSrc("/wgu-logo.svg")
                     .attr("width", 100)
                     .attr("height", 22),
                 span(attrs(".fs-4"), "Capstone")
@@ -54,8 +70,11 @@ public class MainTemplate {
             hr(),
             TagCreator.ul(attrs(".nav.nav-pills.flex-column.mb-auto.px-2"),
                           sidebarLi(".nav-link.link-dark" + iffElse(route == "home" , ".active", ".border"), "bi-speedometer2", "Dashboard", "/"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route == "actions" , ".active", ".border"), "bi-table", "Action", "/actions"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route == "simulations" , ".active", ".border"), "bi-cpu", "Simulations", "/simulations"),
+                          sidebarLi(".nav-link.link-dark" + iffElse(route == "types" , ".active", ".border"), "bi-table", "Types", "/types"),
+                          sidebarLi(".nav-link.link-dark" + iffElse(route.contains("action") , ".active", ".border"), "bi-hurricane", "Actions", "/actions"),
+                          sidebarLi(".nav-link.link-dark" + iffElse(route.contains("character") , ".active", ".border"), "bi-person-circle", "Characters", "/characters"),
+                          sidebarLi(".nav-link.link-dark" + iffElse(route == "game-sets" , ".active", ".border"), "bi-sliders", "Game Sets", "/game-sets"),
+                          sidebarLi(".nav-link.link-dark" + iffElse(route == "simulations" , ".active", ".border"), "bi-dice-3", "Simulations", "/simulations"),
                           sidebarLi(".nav-link.link-dark" + iffElse(route == "game" , ".active", ".border"), "bi-controller", "Play Testing", "/game")
             ).attr("hx-boost", "true"),
             hr(),
@@ -64,7 +83,7 @@ public class MainTemplate {
                 img(attrs(".rounded-circle.ms-4.me-3"))
                     .attr("width", 32)
                     .attr("height", 32)
-                    .withSrc("profile.jpg"),
+                    .withSrc("/profile.jpg"),
                 strong("David Bruce")
             )
         ).withStyle("min-width: 200px");

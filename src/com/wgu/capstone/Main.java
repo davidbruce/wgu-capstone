@@ -1,7 +1,7 @@
 package com.wgu.capstone;
 
-import com.wgu.capstone.controllers.ActionsController;
-import com.wgu.capstone.views.ActionsView;
+import com.wgu.capstone.controllers.*;
+import com.wgu.capstone.views.GameSetActionsView;
 import com.wgu.capstone.views.MainTemplate;
 import io.javalin.Javalin;
 import j2html.tags.ContainerTag;
@@ -11,8 +11,12 @@ import org.jdbi.v3.sqlite3.SQLitePlugin;
 import static j2html.TagCreator.*;
 
 import java.sql.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class Main {
+    public static Jdbi jdbi = null;
+    public static List<List<String>> types = null;
     static void setupDB(Connection connection) throws SQLException {
             //check if database has been generated
             Statement statement = connection.createStatement();
@@ -34,6 +38,7 @@ public class Main {
                                                 create table Actions (
                                                     id integer PRIMARY KEY AUTOINCREMENT,
                                                     name string,
+                                                    category integer not null default 0 check(category IN (0,1)),
                                                     type_id integer,
                                                     created datetime default current_timestamp,
                                                     modified datetime,
@@ -67,6 +72,7 @@ public class Main {
                                                 create table CharacterValues (
                                                     id integer PRIMARY KEY AUTOINCREMENT,
                                                     character_id integer,
+                                                    hp integer,
                                                     phy_attack integer,
                                                     mag_attack integer,
                                                     phy_defense integer,
@@ -148,6 +154,26 @@ public class Main {
         app.get("/", ctx -> ctx.html(
             MainTemplate.mainView("home", div("Home!"))));
         ActionsController.createRoutes(app);
+        ActionValuesController.createRoutes(app);
+        TypesController.createRoutes(app);
+        CharactersController.createRoutes(app);
+        CharacterValuesController.createRoutes(app);
+        GameSetsController.createRoutes(app);
+        GameSetValuesController.createRoutes(app);
+        app.get("/game", ctx -> ctx.html(
+            MainTemplate.mainView("game",
+                button(attrs(".btn"), "Open").attr("onClick", "window.runGame()"),
+                div(
+                    rawHtml("""
+                            <script type="text/javascript">
+                            var script = document.createElement('script')
+                            script.src = '/boardgameio.min.js'
+                            document.head.append(script); 
+                            </script>
+                        """)
+//                    script().withType("text/javascript").withSrc("/boardgameio.min.js"),
+                ))
+        ));
         actionSets(app);
     }
 
@@ -163,23 +189,29 @@ public class Main {
             // create a database connection
             connection = DriverManager.getConnection("jdbc:sqlite:capstone.db");
             setupDB(connection);
-            Jdbi jdbi = Jdbi.create(connection).installPlugin(new SQLitePlugin());
-
+            jdbi = Jdbi.create(connection).installPlugin(new SQLitePlugin());
+            types = jdbi.withHandle(
+                handle -> {
+                    return handle.createQuery("Select * from Types")
+                        .map(((rs, ctx) -> Arrays.asList(rs.getString("id"), rs.getString("name"))))
+                        .list();
+                }
+            );
+            setupControllers(app);
 
         } catch (SQLException e) {
             // if the error message is "out of memory",
             // it probably means no database file is found
             System.err.println(e.getMessage());
-        } finally {
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException e) {
-                // connection close failed.
-                System.err.println(e.getMessage());
-            }
         }
-
-        setupControllers(app);
+//        finally {
+//            try {
+//                if (connection != null)
+//                    connection.close();
+//            } catch (SQLException e) {
+//                // connection close failed.
+//                System.err.println(e.getMessage());
+//            }
+//        }
     }
 }

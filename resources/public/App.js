@@ -1,72 +1,146 @@
-import { Client } from 'boardgame.io/client';
-import { Debug } from 'boardgame.io/debug';
-import { TicTacToe } from './Game';
+function getPlayers() {
+    return {
+                     player: {
+                       name: "Test",
+                       type: "Fire",
+                       hp: 100,
+                       stats: {
+                           maxHP: 100,
+                           phyAttack: 100,
+                           magAttack: 100,
+                           phyDefense: 100,
+                           magDefense: 100,
+                           speed: 100
+                       },
+                       moves: [
+                          {name: "Fire", damage: 45, category: "Magical", effect: ""},
+                          {name: "Fire", damage: 45, category: "Magical", effect: ""},
+                          {name: "Fire", damage: 45, category: "Magical", effect: ""},
+                          {name: "Fire", damage: 45, category: "Magical", effect: ""}
+                       ]
+                     },
+                     enemy: {
+                         name: "Test2",
+                         type: "Fire",
+                         hp: 100,
+                         stats: {
+                             maxHP: 100,
+                             phyAttack: 100,
+                             magAttack: 100,
+                             phyDefense: 100,
+                             magDefense: 100,
+                             speed: 100
+                         },
+                         moves: [
+                            {name: "Fire", damage: 45, category: "Magical", effect: ""},
+                            {name: "Fire", damage: 45, category: "Magical", effect: ""},
+                            {name: "Fire", damage: 45, category: "Magical", effect: ""},
+                            {name: "Fire", damage: 45, category: "Magical", effect: ""}
+                         ]
+                     }
+                 }
+}
+var RPGCombat = {
+  setup: () => getPlayers(),
+  turn: {
+    moveLimit: 1,
+  },
 
-class TicTacToeClient {
-  constructor(rootElement) {
-    this.client = Client({ game: TicTacToe, debug: { impl: Debug } });
+  moves: {
+    attack: (G, ctx, id) => {
+        if (id < 0 || id > 3) {
+            return 'INVALID_MOVE';
+        }
+        if (ctx.currentPlayer === '0') {
+            G.enemy.hp -= damage(G.player, G.enemy, id);
+        } else {
+            G.player.hp -= damage(G.enemy, G.player, id);
+        }
+    }
+  },
+
+  endIf: (G, ctx) => {
+    if (ctx.currentPlayer === '0' && G.enemy.hp < 1) {
+      return { winner: ctx.currentPlayer };
+    }
+    else if (ctx.currentPlayer === '1' && G.player.hp < 1) {
+      return { winner: ctx.currentPlayer };
+    }
+  },
+
+  ai: {
+    enumerate: (G, ctx) => {
+      let moves = [];
+      for (let i = 0; i < 4; i++) {
+          moves.push({ move: 'attack', args: [i] });
+      }
+      return moves;
+    }
+  }
+};
+
+function damage(attacker, defender, move) {
+    var move = attacker.moves[move];
+    return Math.floor(((22 * move.damage * (move.category === "Physical" ? (attacker.stats.phyDefense/defender.stats.phyDefense) : (attacker.stats.magDefense/defender.stats.magDefense))
+            / 50) + 2)
+    );
+}
+
+
+class RPGCombatClient {
+  constructor() {
+    this.client = BoardgameIO.Client({ game: RPGCombat, debug: true });
     this.client.start();
-    this.rootElement = rootElement;
-    this.createBoard();
-    this.attachListeners();
     this.client.subscribe(state => this.update(state));
   }
 
-  createBoard() {
-    // Create cells in rows for the Tic-Tac-Toe board.
-    const rows = [];
-    for (let i = 0; i < 3; i++) {
-      const cells = [];
-      for (let j = 0; j < 3; j++) {
-        const id = 3 * i + j;
-        cells.push(`<td class="cell" data-id="${id}"></td>`);
-      }
-      rows.push(`<tr>${cells.join('')}</tr>`);
-    }
-
-    // Add the HTML to our app <div>.
-    // We’ll use the empty <p> to display the game winner later.
-    this.rootElement.innerHTML = `
-      <table>${rows.join('')}</table>
-      <p class="winner"></p>
-    `;
-  }
-  attachListeners() {
-    // This event handler will read the cell id from a cell’s
-    // `data-id` attribute and make the `clickCell` move.
-    const handleCellClick = event => {
-      const id = parseInt(event.target.dataset.id);
-      this.client.moves.clickCell(id);
-    };
-    // Attach the event listener to each of the board cells.
-    const cells = this.rootElement.querySelectorAll('.cell');
-    cells.forEach(cell => {
-      cell.onclick = handleCellClick;
-    });
-  }
-
   update(state) {
-    // Get all the board cells.
-    const cells = this.rootElement.querySelectorAll('.cell');
-    // Update cells to display the values in game state.
-    cells.forEach(cell => {
-      const cellId = parseInt(cell.dataset.id);
-      const cellValue = state.G.cells[cellId];
-      cell.textContent = cellValue !== null ? cellValue : '';
-    });
-    // Get the gameover message element.
-    const messageEl = this.rootElement.querySelector('.winner');
-    // Update the element to show a winner if any.
     if (state.ctx.gameover) {
-      messageEl.textContent =
-        state.ctx.gameover.winner !== undefined
-          ? 'Winner: ' + state.ctx.gameover.winner
-          : 'Draw!';
+    console.log(state.ctx.gameover.winner);
+//      messageEl.textContent =
+//        state.ctx.gameover.winner !== undefined
+//          ? 'Winner: ' + state.ctx.gameover.winner
+//          : 'Draw!';
     } else {
-      messageEl.textContent = '';
+//      messageEl.textContent = '';
     }
   }
 }
 
-const appElement = document.getElementById('app');
-const app = new TicTacToeClient(appElement);
+window.observer = new MutationObserver(function (mutations, mo) {
+  var debugPanel = document.getElementsByClassName("debug-panel svelte-1dhkl71")[0];
+  if (debugPanel) {
+    var ai = document.getElementsByClassName("menu svelte-14p9tpy")[0].lastChild;
+    ai.click();
+    var checkActive = setInterval(function() {
+      if (ai.classList.contains("active")) {
+         window.reset = document.getElementById("key-1");
+         window.simulate = document.getElementById("key-3");
+         document.getElementsByClassName("option svelte-1fu900w")[1].getElementsByTagName("span")[0].innerText = 200;
+         document.getElementsByClassName("option svelte-1fu900w")[1].getElementsByTagName("input")[0].value = 200;
+         document.getElementsByClassName("option svelte-1fu900w")[2].getElementsByTagName("span")[0].innerText = 15;
+         document.getElementsByClassName("option svelte-1fu900w")[2].getElementsByTagName("input")[0].value = 15;
+         dispatchChangeEvent(document.getElementsByClassName("option svelte-1fu900w")[1].getElementsByTagName("input")[0]);
+         dispatchChangeEvent(document.getElementsByClassName("option svelte-1fu900w")[2].getElementsByTagName("input")[0]);
+         window.simulate.click();
+         clearInterval(checkActive);
+      }
+    }, 100);
+    mo.disconnect();
+    return;
+  }
+});
+
+function dispatchChangeEvent (node) {
+    var changeEvent = document.createEvent('HTMLEvents');
+    changeEvent.initEvent('change', true, true);
+    node.dispatchEvent(changeEvent);
+}
+
+window.runGame = function() {
+    window.observer.observe(document, {
+      childList: true,
+      subtree: true
+    });
+    window.game = new RPGCombatClient();
+}

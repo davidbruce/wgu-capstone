@@ -1,4 +1,5 @@
 package com.wgu.capstone.models;
 
-public class Types {
+public class Types extends Entity {
+    String name;
 }
