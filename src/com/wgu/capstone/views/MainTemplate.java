@@ -5,6 +5,8 @@ import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 
+import java.util.Arrays;
+
 import static j2html.TagCreator.*;
 
 public class MainTemplate {
@@ -34,9 +36,11 @@ public class MainTemplate {
                         ),
                         div(
                             attrs("#main-wrapper.p-4"),
-                            div(
-                                attrs(".shadow.bg-white.rounded.p-3"),
-                                main
+                            each(Arrays.asList(main), tag ->
+                                div(
+                                    attrs(".rounded.p-3"),
+                                    tag
+                                )
                             )
                         )
                     )

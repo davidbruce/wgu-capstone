@@ -1,7 +1,9 @@
 package com.wgu.capstone.views;
 
 import j2html.tags.ContainerTag;
+import j2html.tags.DomContent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static j2html.TagCreator.*;
@@ -44,8 +46,8 @@ public class TableTemplate {
                                         )
                                             .attr("onclick",
                                                 """
-                                                        htmx.toggleClass(htmx.find("#form-wrapper"), "show"); 
-                                                        htmx.toggleClass(htmx.find("#form-wrapper"), "p-4"); 
+                                                        htmx.addClass(htmx.find("#form-wrapper"), "show"); 
+                                                        htmx.addClass(htmx.find("#form-wrapper"), "p-4"); 
                                                       """)
                                             .attr("hx-get", updelLink + "delete/" + row.get(0))
                                             .attr("hx-target", "#form")
@@ -76,8 +78,8 @@ public class TableTemplate {
                     button(attrs(".btn.me-2"), "Create")
                         .attr("onclick",
                             """
-                                    htmx.toggleClass(htmx.find("#form-wrapper"), "show"); 
-                                    htmx.toggleClass(htmx.find("#form-wrapper"), "p-4"); 
+                                    htmx.addClass(htmx.find("#form-wrapper"), "show"); 
+                                    htmx.addClass(htmx.find("#form-wrapper"), "p-4"); 
                                   """
                         )
                         .attr("hx-get", route)
@@ -89,28 +91,63 @@ public class TableTemplate {
             )
         );
     }
-    public static ContainerTag tableFooter() {
+    public static ContainerTag tableFooter(int page, int count, String route) {
+        List<DomContent> pages = new ArrayList<>();
+        int maxPage = (int)Math.ceil(count / 15);
+        if (maxPage == 0) {
+            maxPage = 1;
+        }
+        int startPage = page - 2;
+        if (startPage < 1) {
+            startPage = page;
+        }
+        if (page == 2) {
+            startPage = 1;
+        }
+
+        if (maxPage > 5) {
+            maxPage = 5;
+        } else {
+            startPage = 1;
+        }
+        for (int i = startPage; i <= maxPage; i++) {
+            pages.add(
+              li(
+                  attrs(".page-item.me-2" + (page == i ? ".active" : "")),
+                  a(
+                      attrs(".page-link.link-dark"),
+                      text("" + i)
+                  ).withHref(route + "?page=" + i)
+              )
+            );
+        }
         return div(
             attrs(".d-flex.justify-content-between.bd-highlight"),
             nav(
                 attrs(".p-2.bd-highlight"),
                 ul(
                     attrs(".pagination"),
-                    rawHtml("""
-                                                 <li class="page-item me-2 active"><a class="page-link link-dark" href="#">1</a></li>
-                                                 <li class="page-item me-2"><a class="page-link link-dark" href="#">2</a></li>
-                                                 <li class="page-item me-2"><a class="page-link link-dark" href="#">3</a></li>
-                                     """)
+                    each(pages, pageLi -> pageLi)
                 ).withStyle("margin-bottom: 0")
             ).attr("aria-label", "Page Navigation for labels"),
             nav(
                 attrs(".p-2.bd-highlight"),
                 ul(
                     attrs(".pagination"),
-                    rawHtml("""
-                                                 <li class="page-item me-2"><a class="page-link link-dark" href="#">Previous</a></li>
-                                                 <li class="page-item me-2"><a class="page-link link-dark" href="#">Next</a></li>
-                                     """)
+                    li(
+                        attrs(".page-item.me-2" + (page == 1 ? ".disabled" : "")),
+                        a(
+                            attrs(".page-link.link-dark"),
+                            "Previous"
+                        ).withHref(route + "?page=" + (page - 1))
+                    ),
+                    li(
+                        attrs(".page-item.me-2" + (page == maxPage ? ".disabled" : "")),
+                        a(
+                            attrs(".page-link.link-dark"),
+                            "Next"
+                        ).withHref(route + "?page=" + (page + 1))
+                    )
                 ).withStyle("margin-bottom: 0")
 
             ).attr("aria-label", "Page Navigation for labels")

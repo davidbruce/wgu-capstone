@@ -1,13 +1,24 @@
 @keyframes load {
-  from {margin-top: -600px;}
-  to {margin-top: 0px;}
+    from {
+        background-color: rgba(0,123,255,.05);
+        box-shadow: 0rem 0rem 2rem rgba(0,123,255,.35);
+    }
+    to {
+        background-color: white;
+        box-shadow: 0rem .5rem 1rem rgba(0,0,0,.15);
+     }
 }
 
-#main-wrapper>.shadow {
+#main-wrapper>div.rounded {
     animation: load 0.5s;
     animation-iteration-count: 1;
+    box-shadow: 0rem .5rem 1rem rgba(0,0,0,.15);
+    background-color: white;
 }
 
+#main-wrapper>div:nth-child(even) {
+    margin-top: 0.75rem;
+}
 body {
     display: flex;
     flex-wrap: nowrap;
@@ -15,6 +26,16 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     font-size: 0.875rem;
+}
+#body-container {
+    overflow: auto;
+}
+.multi-check {
+    overflow-y: auto;
+    height: 200px;
+    border: 1px solid #ced4da;
+    padding: .375rem .75rem;
+    border-radius: 0.25rem;
 }
 .nav-link {
     margin-top: 0.5rem;
@@ -41,29 +62,28 @@ body {
     border: 1px solid #dee2e6 !important
 }
 
-.btn.disabled {
-    box-shadow: none;
+.page-item.disabled {
+    pointer-events: none;
+    opacity: .65;
 }
-
 .nav-pills .nav-link {
     background-color: #F3F3F3;
 }
 
-.btn, .nav-link, .page-link, .table-link {
+.btn, .nav-link, .page-link, .table-link, .form-check-input:checked[type="checkbox"] {
     border-radius: .25rem;
     background-color: #F3F3F3;
     box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
     transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
 
-.btn:hover, .nav-link:hover, .page-link:hover, .form-control:hover, .table-link:hover {
+.btn:hover, .nav-link:hover, .page-link:hover, .form-control:hover, .table-link:hover, .form-check-input:checked[type="checkbox"]:hover {
     z-index: 99;
     background-color: #fff;
     box-shadow: 0 0.65rem 1.25rem rgba(0,0,0,.15) !important;
 }
 
-
-.btn:focus, .nav-link:focus, .page-link:focus, .form-control:focus, .table-link:focus {
+.btn:focus, .nav-link:focus, .page-link:focus, .form-control:focus, .table-link:focus, .form-check-input:checked[type="checkbox"]:focus {
     z-index: 99;
     background-color: #fff;
     /*box-shadow: 0 0.65rem 1.25rem rgba(0,0,0,.15) !important;*/
@@ -71,7 +91,7 @@ body {
     box-shadow: 0 .5rem 1rem rgba(0,123,255,.25) !important;
 }
 
-.btn:active, .nav-link:active, .page-link:active {
+.btn:active, .nav-link:active, .page-link:active, .form-check-input:checked[type="checkbox"]:active {
     z-index: 99;
     background-color: rgba(0,123,255,.05);
     border: 1px solid rgba(0,123,255,.25) !important;
@@ -110,7 +130,6 @@ body {
 .form-check-input:hover {
     cursor: pointer;
     z-index: 99;
-    background-color: #fff;
     border: 1px solid rgba(0,0,0,.15) !important;
     box-shadow: 0 0.4rem .5rem rgba(0,0,0,.15) !important;
 }
@@ -131,4 +150,11 @@ body {
     pointer-events: none;
     pointer: default;
     box-shadow: none !important;
+}
+
+.form-check-input:checked[type="checkbox"] {
+    background-image: url("/bootstrap-icons-1.5.0/check-lg.svg");
+    background-size: 60%;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
 }

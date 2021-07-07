@@ -144,3 +144,4 @@ window.runGame = function() {
     });
     window.game = new RPGCombatClient();
 }
+

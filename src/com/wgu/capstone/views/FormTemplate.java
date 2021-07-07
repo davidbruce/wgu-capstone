@@ -3,6 +3,9 @@ package com.wgu.capstone.views;
 import j2html.tags.Tag;
 
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.attrs;
@@ -10,10 +13,14 @@ import static j2html.TagCreator.attrs;
 public class FormTemplate {
 
     public static Tag textFormControl(String label, String placeholder) {
-        return textFormControl(label, placeholder, null);
+        return textFormControl(label, placeholder, null, false);
     }
 
     public static Tag textFormControl(String label, String placeholder, String value) {
+        return textFormControl(label, placeholder, value, false);
+    }
+
+    public static Tag textFormControl(String label, String placeholder, String value, boolean disabled) {
         return div(
             attrs(".mb-3"),
             label(label),
@@ -21,14 +28,19 @@ public class FormTemplate {
                 .withName(label.toLowerCase().replace(' ', '_'))
                 .withPlaceholder(placeholder)
                 .withValue(value)
+                .attr(disabled ? "disabled" : "")
         );
     }
 
-    public static Tag radioFormControl(String name, Map<String, String> inputs) {
-        return radioFormControl(name, inputs, null);
+    public static Tag radioFormControl(String name, SortedMap<String, String> inputs) {
+        return radioFormControl(name, inputs, null, false);
     }
 
-    public static Tag radioFormControl(String name, Map<String, String> inputs, String value) {
+    public static Tag radioFormControl(String name, SortedMap<String, String> inputs, String value) {
+        return radioFormControl(name, inputs, value, false);
+    }
+
+    public static Tag radioFormControl(String name, SortedMap<String, String> inputs, String value, boolean disabled) {
         return div(
             attrs(".mb-3"),
             each(inputs, (String label, String radioValue) ->
@@ -38,7 +50,9 @@ public class FormTemplate {
                         .withName(name)
                         .withType("radio")
                         .withValue(radioValue)
-                        .attr("checked", radioValue.equals(value) ? true : false),
+                        .attr(radioValue.equals(value) ? "checked" : "", radioValue.equals(value) ? "checked" : "")
+                        .attr(disabled ? "disabled" : "")
+                    ,
                     label(attrs(".form-check-label"), label)
                 )
             )
@@ -46,20 +60,69 @@ public class FormTemplate {
     }
 
     public static Tag selectFormControl(String label, Map<String, String> options) {
-        return selectFormControl(label, options, null);
+        return selectFormControl(label, options, null, false);
     }
 
     public static Tag selectFormControl(String label, Map<String, String> options, String value) {
+        return selectFormControl(label, options, value, false);
+    }
+
+    public static Tag selectFormControl(String label, Map<String, String> options, String value, boolean disabled) {
+        TreeMap<String, String> sorted = options.entrySet()
+                                .stream()
+                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, TreeMap::new));
         return div(
             attrs(".mb-3"),
             label(label),
             select(
                 attrs(".form-select"),
-                each(options, (option, selectValue) ->
-                    option(option).withValue(selectValue)
+                each(sorted, (option, selectValue) ->
+                    option(rawHtml(option))
+                        .withValue(selectValue)
+                        .attr(selectValue.equals(value) ? "selected" : "")
                 )
             ).withName(label.toLowerCase().replace(' ', '_'))
-            .withValue(value)
+            .attr(disabled ? "disabled" : "")
         );
+    }
+
+    public static Tag nestedMultiSelectFormControl(String label, Map<String, String> options) {
+        TreeMap<String, String> sorted = options.entrySet()
+            .stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, TreeMap::new));
+        return div(
+            attrs(".mb-3"),
+            label(label),
+            div(
+                attrs(".multi-check"),
+                each(sorted, (option, selectValue) ->
+                    div(
+                        attrs(".form-check"),
+                        input(
+                            attrs("#action" + selectValue + ".form-check-input")
+                        ).withType("checkbox")
+                         .withValue(selectValue),
+                        label(
+                            attrs(".form-check-label"),
+                            rawHtml(option)
+                        ).attr("for", "action" + selectValue)
+                    )
+                )
+            ).withName(label.toLowerCase().replace(' ', '_'))
+        );
+    }
+
+    public static Tag cancelFormButton(String text) {
+        return button(
+            attrs(".btn.ms-2"),
+            text
+        )
+            .attr("type", "cancel")
+            .attr("onclick",
+                """
+                        htmx.removeClass(htmx.find("#form-wrapper"), "show"); 
+                        htmx.removeClass(htmx.find("#form-wrapper"), "p-4"); 
+                        return false; 
+                      """);
     }
 }
