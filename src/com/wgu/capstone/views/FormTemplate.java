@@ -2,6 +2,7 @@ package com.wgu.capstone.views;
 
 import j2html.tags.Tag;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -87,28 +88,26 @@ public class FormTemplate {
     }
 
     public static Tag nestedMultiSelectFormControl(String label, Map<String, String> options) {
-        TreeMap<String, String> sorted = options.entrySet()
-            .stream()
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, TreeMap::new));
         return div(
             attrs(".mb-3"),
             label(label),
             div(
                 attrs(".multi-check"),
-                each(sorted, (option, selectValue) ->
+                each(options, (option, selectValue) ->
                     div(
                         attrs(".form-check"),
                         input(
                             attrs("#action" + selectValue + ".form-check-input")
                         ).withType("checkbox")
-                         .withValue(selectValue),
+                         .withValue(selectValue)
+                         .withName(label.toLowerCase().replace(' ', '_')),
                         label(
                             attrs(".form-check-label"),
                             rawHtml(option)
                         ).attr("for", "action" + selectValue)
                     )
                 )
-            ).withName(label.toLowerCase().replace(' ', '_'))
+            )
         );
     }
 
