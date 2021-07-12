@@ -242,7 +242,8 @@ public class GameSetValuesController {
                         )
                     )
                 ),
-                button(attrs(".btn"), "Submit").withType("submit")
+                button(attrs(".btn"), "Submit").withType("submit"),
+                cancelFormButton("Cancel")
             ).withAction("/game-set-values/" + ctx.pathParam("gameset_id") + "/create")
                 .withMethod("post")
                 .attr("hx-boost", "true")
@@ -304,7 +305,8 @@ public class GameSetValuesController {
                    )
                                             )
                ),
-               button(attrs(".btn"), "Submit").withType("submit")
+               button(attrs(".btn"), "Submit").withType("submit"),
+               cancelFormButton("Cancel")
            ).withAction("/game-set-characters/" + ctx.pathParam("gameset_id") + "/create")
                .withMethod("post")
                .attr("hx-boost", "true")
