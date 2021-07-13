@@ -90,7 +90,7 @@ public class MainTemplate {
                     .withSrc("/profile.jpg"),
                 strong("David Bruce")
             )
-        ).withStyle("min-width: 200px");
+        ).withStyle("min-width: 237px");
     }
 
     static ContainerTag sidebarLi(String attrs, String icon, String text, String href) {

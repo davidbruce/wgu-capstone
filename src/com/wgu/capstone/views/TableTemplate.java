@@ -67,15 +67,17 @@ public class TableTemplate {
             )
         );
     }
-
     public static ContainerTag tableHeader(String title, String route, boolean showButtons) {
+        return tableHeader(title, "Create", route, showButtons);
+    }
+    public static ContainerTag tableHeader(String title, String buttonText, String route, boolean showButtons) {
         return div(
             attrs(".d-flex.justify-content-between.bd-highlight.mb-3"),
             h4(attrs(".p-2.bd-highlight"), title),
             iff(showButtons,
                 div(
                     attrs(".p-2.d-flex.justify-content-center"),
-                    button(attrs(".btn.me-2"), "Create")
+                    button(attrs(".btn.me-2"), buttonText)
                         .attr("onclick",
                             """
                                     htmx.addClass(htmx.find("#form-wrapper"), "show"); 

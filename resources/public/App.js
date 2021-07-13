@@ -1,24 +1,10 @@
+function generatePlayer() {
+    return
+}
 function getPlayers() {
+    console.debug();
     return {
-                     player: {
-                       name: "Test",
-                       type: "Fire",
-                       hp: 100,
-                       stats: {
-                           maxHP: 100,
-                           phyAttack: 100,
-                           magAttack: 100,
-                           phyDefense: 100,
-                           magDefense: 100,
-                           speed: 100
-                       },
-                       moves: [
-                          {name: "Fire", damage: 45, category: "Magical", effect: ""},
-                          {name: "Fire", damage: 45, category: "Magical", effect: ""},
-                          {name: "Fire", damage: 45, category: "Magical", effect: ""},
-                          {name: "Fire", damage: 45, category: "Magical", effect: ""}
-                       ]
-                     },
+                     player: generatePlayer(),
                      enemy: {
                          name: "Test2",
                          type: "Fire",
@@ -90,7 +76,7 @@ function damage(attacker, defender, move) {
 class RPGCombatClient {
   constructor() {
     this.client = BoardgameIO.Client({ game: RPGCombat, debug: true });
-    this.client.start();
+//    this.client.start();
     this.client.subscribe(state => this.update(state));
   }
 
@@ -143,5 +129,13 @@ window.runGame = function() {
       subtree: true
     });
     window.game = new RPGCombatClient();
+    var url = window.location.href;
+    var gamesetId = url.substring(url.lastIndexOf('/') + 1);
+    fetch(url + '/simulate')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            window.gs = data;
+            window.game.client.start();
+        });
 }
-

@@ -34,6 +34,9 @@
     <orderEntry type="library" name="Maven: org.jetbrains:annotations:13.0" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.71" level="project" />
     <orderEntry type="library" name="Maven: com.j2html:j2html:1.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.10.3" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.10.3" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.10.3" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-simple:1.7.30" level="project" />
     <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.34.0" level="project" />
     <orderEntry type="library" name="Maven: org.jdbi:jdbi3-sqlite:3.20.0" level="project" />
