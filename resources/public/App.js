@@ -81,8 +81,13 @@ var RPGCombat = {
 
 function damage(attacker, defender, action) {
     var move = attacker.actions[action];
-    return Math.floor(((22 * move.damage * (move.category === "Physical" ? (attacker.character.phyDef/defender.character.phyDef) : (attacker.character.magDef/defender.character.magDef))
-            / 50) + 2)
+    return Math.floor(
+            (
+                22 * move.damage * (move.category === "Physical" ?
+                (attacker.character.phyDef/defender.character.phyDef) :
+                (attacker.character.magDef/defender.character.magDef))
+                / 50
+            ) + 2
     );
 }
 
@@ -147,7 +152,6 @@ window.runGame = function() {
     fetch(url + '/simulate')
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             window.gs = data;
             window.game = new RPGCombatClient();
         });
