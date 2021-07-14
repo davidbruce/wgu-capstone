@@ -1,30 +1,44 @@
 function generatePlayer() {
-    return
+    var character;
+    var randomCharacters = window.gs.characters
+        .filter(char => char.testCount < window.gs.maxCharacterTestCount);
+    if (randomCharacters.length > 0) {
+        character = randomCharacters[Math.floor(Math.random() * randomCharacters.length)]
+    } else {
+        character = window.gs.characters[Math.floor(Math.random() * window.gs.characters.length)]
+        window.gs.maxCharacterTestCount++;
+    }
+    character.testCount++;
+
+    var actions = []
+    var randomActions = window.gs.actions
+                .filter(action => action.testCount < window.gs.maxActionTestCount)
+                .sort(() => Math.random() - 0.5);
+    if (randomActions.length > 4) {
+            actions = randomActions.slice(0, 4);
+    }
+    else if (randomActions.length < 4) {
+           actions = randomActions.concat(window.gs.actions
+                    .filter(action => action.testCount === window.gs.maxActionTestCount)
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 4 - randomActions.length)
+           );
+           window.gs.maxActionTestCount++
+    }
+    else {
+        actions = randomActions;
+    }
+    actions.forEach(action => action.testCount++);
+    return {
+        character: character,
+        actions: actions
+    }
 }
 function getPlayers() {
-    console.debug();
     return {
-                     player: generatePlayer(),
-                     enemy: {
-                         name: "Test2",
-                         type: "Fire",
-                         hp: 100,
-                         stats: {
-                             maxHP: 100,
-                             phyAttack: 100,
-                             magAttack: 100,
-                             phyDefense: 100,
-                             magDefense: 100,
-                             speed: 100
-                         },
-                         moves: [
-                            {name: "Fire", damage: 45, category: "Magical", effect: ""},
-                            {name: "Fire", damage: 45, category: "Magical", effect: ""},
-                            {name: "Fire", damage: 45, category: "Magical", effect: ""},
-                            {name: "Fire", damage: 45, category: "Magical", effect: ""}
-                         ]
-                     }
-                 }
+            player: generatePlayer(),
+            enemy: generatePlayer()
+    }
 }
 var RPGCombat = {
   setup: () => getPlayers(),
@@ -38,18 +52,18 @@ var RPGCombat = {
             return 'INVALID_MOVE';
         }
         if (ctx.currentPlayer === '0') {
-            G.enemy.hp -= damage(G.player, G.enemy, id);
+            G.enemy.character.currentHP -= damage(G.player, G.enemy, id);
         } else {
-            G.player.hp -= damage(G.enemy, G.player, id);
+            G.player.character.currentHP -= damage(G.enemy, G.player, id);
         }
     }
   },
 
   endIf: (G, ctx) => {
-    if (ctx.currentPlayer === '0' && G.enemy.hp < 1) {
+    if (ctx.currentPlayer === '0' && G.enemy.character.currentHP < 1) {
       return { winner: ctx.currentPlayer };
     }
-    else if (ctx.currentPlayer === '1' && G.player.hp < 1) {
+    else if (ctx.currentPlayer === '1' && G.player.character.currentHP < 1) {
       return { winner: ctx.currentPlayer };
     }
   },
@@ -65,9 +79,9 @@ var RPGCombat = {
   }
 };
 
-function damage(attacker, defender, move) {
-    var move = attacker.moves[move];
-    return Math.floor(((22 * move.damage * (move.category === "Physical" ? (attacker.stats.phyDefense/defender.stats.phyDefense) : (attacker.stats.magDefense/defender.stats.magDefense))
+function damage(attacker, defender, action) {
+    var move = attacker.actions[action];
+    return Math.floor(((22 * move.damage * (move.category === "Physical" ? (attacker.character.phyDef/defender.character.phyDef) : (attacker.character.magDef/defender.character.magDef))
             / 50) + 2)
     );
 }
@@ -76,7 +90,7 @@ function damage(attacker, defender, move) {
 class RPGCombatClient {
   constructor() {
     this.client = BoardgameIO.Client({ game: RPGCombat, debug: true });
-//    this.client.start();
+    this.client.start();
     this.client.subscribe(state => this.update(state));
   }
 
@@ -128,7 +142,6 @@ window.runGame = function() {
       childList: true,
       subtree: true
     });
-    window.game = new RPGCombatClient();
     var url = window.location.href;
     var gamesetId = url.substring(url.lastIndexOf('/') + 1);
     fetch(url + '/simulate')
@@ -136,6 +149,6 @@ window.runGame = function() {
         .then(data => {
             console.log(data);
             window.gs = data;
-            window.game.client.start();
+            window.game = new RPGCombatClient();
         });
 }

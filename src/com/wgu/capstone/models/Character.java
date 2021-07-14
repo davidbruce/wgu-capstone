@@ -13,6 +13,7 @@ public class Character {
     public int phyDef;
     public int magDef;
     public int speed;
+    public int testCount;
 
     public Character(int gameSetCharacterId, String name, String type, int hp, int phyAtk, int magAtk, int phyDef, int magDef, int speed) {
         this.gameSetCharacterId = gameSetCharacterId;

@@ -7,6 +7,7 @@ public class Action {
     public int damage;
     public int category;
     public String effect;
+    public int testCount;
 
     public Action(int gameSetActionId, String name, String type, int damage, int category, String effect) {
         this.gameSetActionId = gameSetActionId;
