@@ -1,3 +1,44 @@
+window.simulations = 0;
+window.maxSimulations = 50;
+
+class RPGCombatClient {
+  constructor() {
+    this.client = BoardgameIO.Client({ game: RPGCombat, debug: true });
+    this.client.start();
+    this.unsub = this.client.subscribe(state => this.update(state));
+  }
+
+  update(state) {
+    if (state.ctx.gameover) {
+        //log data
+        console.log(state.ctx.gameover.winner);
+                //reset
+        if (window.simulations != window.maxSimulations) {
+              window.game.unsub();
+              window.game.client.stop();
+              window.runGame();
+//              window.newGame();
+//              window.game.client.start();
+//              window.game.client.game.setup()
+//              window.game.client.start();
+//              window.game.unsub = window.game.client.subscribe(state => window.game.update(state));
+//            window.game.client.stop();
+//            window.game.unsub();
+//            window.game.client.stop();
+//            window.game = null;
+//            window.reset();
+//            window.simulate();
+        }
+//      messageEl.textContent =
+//        state.ctx.gameover.winner !== undefined
+//          ? 'Winner: ' + state.ctx.gameover.winner
+//          : 'Draw!';
+    } else {
+//      messageEl.textContent = '';
+    }
+  }
+}
+
 function generatePlayer() {
     var character;
     var randomCharacters = window.gs.characters
@@ -8,7 +49,7 @@ function generatePlayer() {
         character = window.gs.characters[Math.floor(Math.random() * window.gs.characters.length)]
         window.gs.maxCharacterTestCount++;
     }
-    character.testCount++;
+//    character.testCount++;
 
     var actions = []
     var randomActions = window.gs.actions
@@ -28,7 +69,8 @@ function generatePlayer() {
     else {
         actions = randomActions;
     }
-    actions.forEach(action => action.testCount++);
+//    actions.forEach(action => action.testCount++);
+    window.simulations++;
     return {
         character: character,
         actions: actions
@@ -60,11 +102,14 @@ var RPGCombat = {
   },
 
   endIf: (G, ctx) => {
+    var finished = false
     if (ctx.currentPlayer === '0' && G.enemy.character.currentHP < 1) {
-      return { winner: ctx.currentPlayer };
+        finished = true
+        return { winner: ctx.currentPlayer };
     }
     else if (ctx.currentPlayer === '1' && G.player.character.currentHP < 1) {
-      return { winner: ctx.currentPlayer };
+        finished = true
+        return { winner: ctx.currentPlayer };
     }
   },
 
@@ -92,26 +137,6 @@ function damage(attacker, defender, action) {
 }
 
 
-class RPGCombatClient {
-  constructor() {
-    this.client = BoardgameIO.Client({ game: RPGCombat, debug: true });
-    this.client.start();
-    this.client.subscribe(state => this.update(state));
-  }
-
-  update(state) {
-    if (state.ctx.gameover) {
-    console.log(state.ctx.gameover.winner);
-//      messageEl.textContent =
-//        state.ctx.gameover.winner !== undefined
-//          ? 'Winner: ' + state.ctx.gameover.winner
-//          : 'Draw!';
-    } else {
-//      messageEl.textContent = '';
-    }
-  }
-}
-
 window.observer = new MutationObserver(function (mutations, mo) {
   var debugPanel = document.getElementsByClassName("debug-panel svelte-1dhkl71")[0];
   if (debugPanel) {
@@ -119,15 +144,14 @@ window.observer = new MutationObserver(function (mutations, mo) {
     ai.click();
     var checkActive = setInterval(function() {
       if (ai.classList.contains("active")) {
-         window.reset = document.getElementById("key-1");
-         window.simulate = document.getElementById("key-3");
-         document.getElementsByClassName("option svelte-1fu900w")[1].getElementsByTagName("span")[0].innerText = 200;
-         document.getElementsByClassName("option svelte-1fu900w")[1].getElementsByTagName("input")[0].value = 200;
-         document.getElementsByClassName("option svelte-1fu900w")[2].getElementsByTagName("span")[0].innerText = 15;
-         document.getElementsByClassName("option svelte-1fu900w")[2].getElementsByTagName("input")[0].value = 15;
+         window.simulate = () => document.getElementById("key-3").click();
+         document.getElementsByClassName("option svelte-1fu900w")[1].getElementsByTagName("span")[0].innerText = 32;
+         document.getElementsByClassName("option svelte-1fu900w")[1].getElementsByTagName("input")[0].value = 32;
+         document.getElementsByClassName("option svelte-1fu900w")[2].getElementsByTagName("span")[0].innerText = 16;
+         document.getElementsByClassName("option svelte-1fu900w")[2].getElementsByTagName("input")[0].value = 16;
          dispatchChangeEvent(document.getElementsByClassName("option svelte-1fu900w")[1].getElementsByTagName("input")[0]);
          dispatchChangeEvent(document.getElementsByClassName("option svelte-1fu900w")[2].getElementsByTagName("input")[0]);
-         window.simulate.click();
+         window.simulate();
          clearInterval(checkActive);
       }
     }, 100);
@@ -147,12 +171,18 @@ window.runGame = function() {
       childList: true,
       subtree: true
     });
+    window.simulations = 0;
     var url = window.location.href;
     var gamesetId = url.substring(url.lastIndexOf('/') + 1);
-    fetch(url + '/simulate')
-        .then(response => response.json())
-        .then(data => {
-            window.gs = data;
-            window.game = new RPGCombatClient();
-        });
+    if (window.gs == null) {
+        fetch(url + '/simulate')
+            .then(response => response.json())
+            .then(data => {
+                window.gs = data;
+                window.game = new RPGCombatClient();
+            });
+    }
+    else {
+        window.game = new RPGCombatClient();
+    }
 }
