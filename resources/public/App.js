@@ -14,6 +14,10 @@ class RPGCombatClient {
         console.log(state.ctx.gameover.winner);
                 //reset
         if (window.simulations != window.maxSimulations) {
+              var request = new Request(url + '/simulate', {
+              });
+              fetch(request)
+                .then()
               window.game.unsub();
               window.game.client.stop();
               window.runGame();
@@ -171,7 +175,6 @@ window.runGame = function() {
       childList: true,
       subtree: true
     });
-    window.simulations = 0;
     var url = window.location.href;
     var gamesetId = url.substring(url.lastIndexOf('/') + 1);
     if (window.gs == null) {

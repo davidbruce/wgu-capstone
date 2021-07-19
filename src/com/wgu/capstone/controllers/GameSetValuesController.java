@@ -223,6 +223,7 @@ public class GameSetValuesController {
                       div(
                                               rawHtml("""
                             <script type="text/javascript">
+                            window.simulations = 0;
                             var script = document.createElement('script')
                             script.src = '/boardgameio.min.js'
                             document.head.append(script); 
