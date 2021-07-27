@@ -1,5 +1,6 @@
 window.simulations = 0;
 window.maxSimulations = 50;
+//window.results = [];
 
 class RPGCombatClient {
   constructor() {
@@ -9,36 +10,64 @@ class RPGCombatClient {
   }
 
   update(state) {
+    if (state.deltalog != null) {
+        var payload = state.deltalog[0].action.payload;
+        var player;
+        var action;
+        if (payload.playerID === "0") {
+//            window.player.actions[payload.args[0]].useCount += 1;
+            player = window.player.character.gameSetCharacterId;
+            action = window.player.actions[payload.args[0]].gameSetActionId;
+            window.enemy.character.currentHP = state.G.enemy.character.currentHP;
+        } else {
+//            window.enemy.actions[payload.args[0]].useCount += 1;
+            player = window.enemy.character.gameSetCharacterId;
+            action = window.enemy.actions[payload.args[0]].gameSetActionId;
+            window.player.character.currentHP = state.G.player.character.currentHP;
+        }
+        window.turns.push({
+            player: player,
+            action: action,
+            damage: state.G.damage
+        });
+    }
     if (state.ctx.gameover) {
-        //log data
-        console.log(state.ctx.gameover.winner);
-                //reset
         if (window.simulations != window.maxSimulations) {
-              var request = new Request(url + '/simulate', {
-              });
-              fetch(request)
-                .then()
+                var results = {};
+                if (state.ctx.gameover.winner === "0") {
+                    results.winner = window.player;
+                    results.loser = window.enemy;
+                }
+                else {
+                    results.winner = window.enemy;
+                    results.loser = window.player;
+                }
+                results.turns = window.turns;
+//                window.results.push(results);
+
+                var url = window.location.href;
+                            var request = new Request(url + '/simulate', {
+                                method: 'post',
+                                headers: {
+                                   'Accept': 'application/json, text/plain, */*',
+                                   'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(results)
+                            });
+                          fetch(request)
+                                .then(() => {
+                                    console.log("Save success");
+                                })
+                                .catch(() => {
+                                    console.log("Failed to save!");
+                                });
+              window.simulations++;
+              console.log(window.simulations);
               window.game.unsub();
               window.game.client.stop();
               window.runGame();
-//              window.newGame();
-//              window.game.client.start();
-//              window.game.client.game.setup()
-//              window.game.client.start();
-//              window.game.unsub = window.game.client.subscribe(state => window.game.update(state));
-//            window.game.client.stop();
-//            window.game.unsub();
-//            window.game.client.stop();
-//            window.game = null;
-//            window.reset();
-//            window.simulate();
         }
-//      messageEl.textContent =
-//        state.ctx.gameover.winner !== undefined
-//          ? 'Winner: ' + state.ctx.gameover.winner
-//          : 'Draw!';
-    } else {
-//      messageEl.textContent = '';
+
     }
   }
 }
@@ -53,7 +82,7 @@ function generatePlayer() {
         character = window.gs.characters[Math.floor(Math.random() * window.gs.characters.length)]
         window.gs.maxCharacterTestCount++;
     }
-//    character.testCount++;
+    character.testCount++;
 
     var actions = []
     var randomActions = window.gs.actions
@@ -73,17 +102,19 @@ function generatePlayer() {
     else {
         actions = randomActions;
     }
-//    actions.forEach(action => action.testCount++);
-    window.simulations++;
+    actions.forEach(action => action.testCount++);
     return {
-        character: character,
-        actions: actions
+        character: JSON.parse(JSON.stringify(character)),
+        actions: JSON.parse(JSON.stringify(actions)) //deep copy actions to allow individual use counts
     }
 }
 function getPlayers() {
+    window.player = generatePlayer();
+    window.enemy = generatePlayer();
+    //deep copy generated players due to boardgame.io freeezing objects
     return {
-            player: generatePlayer(),
-            enemy: generatePlayer()
+            player: JSON.parse(JSON.stringify(window.player)),
+            enemy: JSON.parse(JSON.stringify(window.enemy))
     }
 }
 var RPGCombat = {
@@ -97,10 +128,13 @@ var RPGCombat = {
         if (id < 0 || id > 3) {
             return 'INVALID_MOVE';
         }
+        G.damage = 0;
         if (ctx.currentPlayer === '0') {
-            G.enemy.character.currentHP -= damage(G.player, G.enemy, id);
+            G.damage = damage(G.player, G.enemy, id);
+            G.enemy.character.currentHP -= G.damage;
         } else {
-            G.player.character.currentHP -= damage(G.enemy, G.player, id);
+            G.damage = damage(G.enemy, G.player, id);
+            G.player.character.currentHP -= G.damage;
         }
     }
   },
@@ -177,10 +211,12 @@ window.runGame = function() {
     });
     var url = window.location.href;
     var gamesetId = url.substring(url.lastIndexOf('/') + 1);
+    window.turns = [];
     if (window.gs == null) {
         fetch(url + '/simulate')
-            .then(response => response.json())
-            .then(data => {
+            .then(response =>
+                response.json()
+            ).then(data => {
                 window.gs = data;
                 window.game = new RPGCombatClient();
             });

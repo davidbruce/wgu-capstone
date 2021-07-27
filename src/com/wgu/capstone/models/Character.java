@@ -15,6 +15,8 @@ public class Character {
     public int speed;
     public int testCount;
 
+    public Character() {}
+
     public Character(int gameSetCharacterId, String name, String type, int hp, int phyAtk, int magAtk, int phyDef, int magDef, int speed) {
         this.gameSetCharacterId = gameSetCharacterId;
         this.name = name;

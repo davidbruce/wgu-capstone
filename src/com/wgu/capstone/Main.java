@@ -5,11 +5,20 @@ import com.wgu.capstone.views.GameSetActionsView;
 import com.wgu.capstone.views.MainTemplate;
 import io.javalin.Javalin;
 import j2html.tags.ContainerTag;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlite3.SQLitePlugin;
-
 import static j2html.TagCreator.*;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
@@ -125,20 +134,6 @@ public class Main {
             MainTemplate.mainView("action-sets", div())));
     }
 
-    static ContainerTag crudTableHeader(String title) {
-        return div(
-            attrs(".d-flex.justify-content-between.bd-highlight.mb-3"),
-            div(attrs(".p-2.bd-highlight"), title),
-            div(attrs(".p-2.bd-highlight"), "Paging"),
-            div(attrs(".p-2.bd-highlight"), "Create Update Button")
-        );
-    }
-
-    static ContainerTag paging() {
-        return div();
-    }
-
-
 
     static void simulations(Javalin app) {
         app.get("/simulations", ctx -> ctx.html(
@@ -198,7 +193,7 @@ public class Main {
                 }
             );
             setupControllers(app);
-
+            Window.main(args);
         } catch (SQLException e) {
             // if the error message is "out of memory",
             // it probably means no database file is found
