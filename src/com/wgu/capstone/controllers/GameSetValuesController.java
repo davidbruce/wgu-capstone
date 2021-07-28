@@ -226,17 +226,42 @@ public class GameSetValuesController {
                 ctx.html(
                     MainTemplate.mainView("game-sets",
                       div(
-                      button(attrs(".btn"), "Open").attr("onClick", "window.runGame()"),
-                      div(
-                                              rawHtml("""
-                            <script type="text/javascript">
-                            window.simulations = 0;
-                            var script = document.createElement('script')
-                            script.src = '/boardgameio.min.js'
-                            document.head.append(script); 
-                            </script>
-                        """)
-                          ).withStyle("display: none;")
+                              attrs(".row.g-3"),
+                              div(
+                                      attrs(".col-auto"),
+                                      textFormControl("Number of Simulations", "Number of simluations", "50")
+                              ),
+                              div(
+                                      attrs(".col-auto"),
+                                      div(
+                                              attrs(".mb-3"),
+                                              label("Run Simulation Button").withStyle("visibility:hidden;"),
+                                              button(attrs(".btn.form-control"),
+                                                      div(attrs(".wrapper"),
+                                                      i(attrs(".bi.bi-joystick.me-2")),
+                                                      text("Run Simulations"))).attr("onClick", "window.resetGame()")
+                                      )
+                              ),
+                              div(
+                                      attrs(".col-md.pt-4.mt-4"),
+                                      div(
+                                              attrs(".progress"),
+                                              div(attrs(".progress-bar"))
+                                                      .withRole("progressbar")
+                                                      .attr("aria-valuenow", "0")
+                                                      .attr("aria-valuemin", "0")
+                                                      .attr("aria-valuemax", "100")
+                                      )
+                              ),
+                              div(
+                                                      rawHtml("""
+                                    <script type="text/javascript">
+                                    var script = document.createElement('script')
+                                    script.src = '/boardgameio.min.js'
+                                    document.head.append(script); 
+                                    </script>
+                                """)
+                                  ).withStyle("display: none;")
                         ),
                         GameSetActionsView.getPartial(gameSet.get(0), "Game Set Actions: " +  gameSet.get(1), Arrays.asList("ID", "Name", "Category", "Type", "Damage", "Accuracy", "Effect"), gameSetActionsData, page, countActions),
                         GameSetCharactersView.getPartial(gameSet.get(0), "Game Set Characters: " + gameSet.get(1), Arrays.asList("ID", "Name", "Type", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), gameSetCharactersData, page, countCharacters)
@@ -421,7 +446,8 @@ public class GameSetValuesController {
        app.post("/game-set-values/:gameset_id/simulate", ctx -> {
            Results results = ctx.bodyAsClass(Results.class);
 
-           Main.jdbi.withHandle(handle -> {
+           Main.jdbi.inTransaction(handle -> {
+                       handle.getConnection().setAutoCommit(false);
                        int simulationId = handle.createQuery(
                                """
                                        insert into Simulations (id) values (null)

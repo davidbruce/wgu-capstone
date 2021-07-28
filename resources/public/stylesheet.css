@@ -161,3 +161,7 @@ body {
     border: 1px solid #dee2e6;
     background-color: #fff;
 }
+
+.progress {
+    border: 1px solid #dee2e6 !important;
+}

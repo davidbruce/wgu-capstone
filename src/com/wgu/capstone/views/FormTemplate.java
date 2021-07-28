@@ -14,22 +14,26 @@ import static j2html.TagCreator.attrs;
 public class FormTemplate {
 
     public static Tag textFormControl(String label, String placeholder) {
-        return textFormControl(label, placeholder, null, false);
+        return textFormControl(label, placeholder, null, false, false);
     }
 
     public static Tag textFormControl(String label, String placeholder, String value) {
-        return textFormControl(label, placeholder, value, false);
+        return textFormControl(label, placeholder, value, false, false);
     }
 
     public static Tag textFormControl(String label, String placeholder, String value, boolean disabled) {
+        return textFormControl(label, placeholder, value, disabled, false);
+    }
+
+    public static Tag textFormControl(String label, String placeholder, String value, boolean disabled, boolean hideLabel) {
         return div(
-            attrs(".mb-3"),
-            label(label),
-            input(attrs(".form-control"))
-                .withName(label.toLowerCase().replace(' ', '_'))
-                .withPlaceholder(placeholder)
-                .withValue(value)
-                .attr(disabled ? "disabled" : "")
+                attrs(".mb-3"),
+                label(label).withClass(hideLabel ? "visually-hidden" : ""),
+                input(attrs(".form-control"))
+                        .withName(label.toLowerCase().replace(' ', '_'))
+                        .withPlaceholder(placeholder)
+                        .withValue(value)
+                        .attr(disabled ? "disabled" : "")
         );
     }
 

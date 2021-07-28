@@ -1,5 +1,6 @@
 window.simulations = 0;
-window.maxSimulations = 50;
+window.maxSimulations = () => document.getElementsByName("number_of_simulations")[0].value;
+window.progressbar = document.getElementsByClassName("progress-bar")[0];
 //window.results = [];
 
 class RPGCombatClient {
@@ -15,12 +16,10 @@ class RPGCombatClient {
         var player;
         var action;
         if (payload.playerID === "0") {
-//            window.player.actions[payload.args[0]].useCount += 1;
             player = window.player.character.gameSetCharacterId;
             action = window.player.actions[payload.args[0]].gameSetActionId;
             window.enemy.character.currentHP = state.G.enemy.character.currentHP;
         } else {
-//            window.enemy.actions[payload.args[0]].useCount += 1;
             player = window.enemy.character.gameSetCharacterId;
             action = window.enemy.actions[payload.args[0]].gameSetActionId;
             window.player.character.currentHP = state.G.player.character.currentHP;
@@ -32,7 +31,7 @@ class RPGCombatClient {
         });
     }
     if (state.ctx.gameover) {
-        if (window.simulations != window.maxSimulations) {
+        if (window.simulations != window.maxSimulations()) {
                 var results = {};
                 if (state.ctx.gameover.winner === "0") {
                     results.winner = window.player;
@@ -43,7 +42,6 @@ class RPGCombatClient {
                     results.loser = window.player;
                 }
                 results.turns = window.turns;
-//                window.results.push(results);
 
                 var url = window.location.href;
                             var request = new Request(url + '/simulate', {
@@ -62,6 +60,10 @@ class RPGCombatClient {
                                     console.log("Failed to save!");
                                 });
               window.simulations++;
+              var percent = Math.trunc((window.simulations / window.maxSimulations()) * 100);
+              window.progressbar.style.width = percent + "%";
+              window.progressbar.textContent = percent + "%";
+              window.progressbar.setAttribute("aria-valuenow", percent);
               console.log(window.simulations);
               window.game.unsub();
               window.game.client.stop();
@@ -204,7 +206,7 @@ function dispatchChangeEvent (node) {
     node.dispatchEvent(changeEvent);
 }
 
-window.runGame = function() {
+window.runGame = () => {
     window.observer.observe(document, {
       childList: true,
       subtree: true
@@ -224,4 +226,16 @@ window.runGame = function() {
     else {
         window.game = new RPGCombatClient();
     }
+}
+
+window.resetGame = () => {
+    if (window.game != null) {
+        window.simulations = 0;
+        window.progressbar.style.width = "0%";
+        window.progressbar.textContent = "0%";
+        window.progressbar.setAttribute("aria-valuenow", 0);
+        window.game.unsub();
+        window.game.client.stop();
+    }
+    window.runGame();
 }
