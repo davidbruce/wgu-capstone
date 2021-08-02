@@ -226,6 +226,26 @@ public class GameSetValuesController {
                 ctx.html(
                     MainTemplate.mainView("game-sets",
                       div(
+                              attrs(".flex-column.mb-auto"),
+                              ul(
+                                      attrs(".nav.nav-pills.d-flex.justify-content-center"),
+                                      li(
+                                              attrs(".nav-item"),
+                                              a(
+                                                      attrs(".nav-link.active.me-2"),
+                                                      text("Game Set Data")
+                                              ).withHref("#")
+                                      ),
+                                      li(
+                                              attrs(".nav-item"),
+                                              a(
+                                                      attrs(".nav-link.link-dark.me-2"),
+                                                      text("Simulation Results")
+                                              ).withHref("#")
+                                      )
+                              )
+                      ),
+                      div(
                               attrs(".row.g-3"),
                               div(
                                       attrs(".col-auto"),

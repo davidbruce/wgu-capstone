@@ -62,7 +62,7 @@ public class MainTemplate {
 
     static ContainerTag sidebar(String route) {
         return div(
-            attrs("#sidebar.d-flex.flex-column.p-3.bg-white.shadow"),
+            attrs("#sidebar.d-flex.flex-column.p-3.bg-white"),
             a(
                 attrs(".d-flex.align-items-center.me-3.link-dark.text-decoration-none"),
                 img(attrs(".bi.me-2"))
@@ -73,13 +73,13 @@ public class MainTemplate {
             ),
             hr(),
             TagCreator.ul(attrs(".nav.nav-pills.flex-column.mb-auto.px-2"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route == "home" , ".active", ".border"), "bi-speedometer2", "Dashboard", "/"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route == "types" , ".active", ".border"), "bi-table", "Types", "/types"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route.contains("action") , ".active", ".border"), "bi-hurricane", "Actions", "/actions"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route.contains("character") , ".active", ".border"), "bi-person-circle", "Characters", "/characters"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route == "game-sets" , ".active", ".border"), "bi-sliders", "Game Sets", "/game-sets"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route == "simulations" , ".active", ".border"), "bi-dice-3", "Simulations", "/simulations"),
-                          sidebarLi(".nav-link.link-dark" + iffElse(route == "game" , ".active", ".border"), "bi-controller", "Play Testing", "/game")
+                          sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "home" , ".active", ".border"), "bi-speedometer2", "Dashboard", "/"),
+                          sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "types" , ".active", ".border"), "bi-table", "Types", "/types"),
+                          sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route.contains("action") , ".active", ".border"), "bi-hurricane", "Actions", "/actions"),
+                          sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route.contains("character") , ".active", ".border"), "bi-person-circle", "Characters", "/characters"),
+                          sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "game-sets" , ".active", ".border"), "bi-sliders", "Game Sets", "/game-sets"),
+                          sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "simulations" , ".active", ".border"), "bi-dice-3", "Simulations", "/simulations"),
+                          sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "game" , ".active", ".border"), "bi-controller", "Play Testing", "/game")
             ).attr("hx-boost", "true"),
             hr(),
             div(

@@ -22,46 +22,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>17-ea+8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-web</artifactId>
-            <version>17-ea+8</version>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.platform</groupId>-->
-<!--            <artifactId>org.eclipse.swt</artifactId>-->
-<!--            <version>3.115.0</version>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.eclipse.platform</groupId>-->
-<!--                    <artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.eclipse.platform</groupId>-->
-<!--                    <artifactId>org.eclipse.swt.gtk.linux.arm</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.platform</groupId>-->
-<!--            <artifactId>org.eclipse.swt.cocoa.macosx.x86_64</artifactId>-->
-<!--            <version>3.115.0</version>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.eclipse.platform</groupId>-->
-<!--                    <artifactId>org.eclipse.swt.gtk.linux.aarch64</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.eclipse.platform</groupId>-->
-<!--                    <artifactId>org.eclipse.swt.gtk.linux.arm</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
-        <dependency>
             <groupId>io.javalin</groupId>
             <artifactId>javalin</artifactId>
             <version>3.13.6</version>

@@ -1,24 +1,15 @@
 package com.wgu.capstone;
 
 import com.wgu.capstone.controllers.*;
-import com.wgu.capstone.views.GameSetActionsView;
 import com.wgu.capstone.views.MainTemplate;
 import io.javalin.Javalin;
-import j2html.tags.ContainerTag;
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
-import javafx.stage.Stage;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlite3.SQLitePlugin;
 import static j2html.TagCreator.*;
 
-import java.awt.*;
-import java.io.IOException;
-import java.net.URI;
+import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
@@ -173,6 +164,11 @@ public class Main {
     }
 
     public static void main(String[] args) {
+//        System.out.println("Working Directory = " + System.getProperty("user.dir"));
+        String dbPath = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile().getParent() + "/capstone.db";
+        System.out.println("DB Path: " + dbPath);
+
+
         Javalin app = Javalin.create(
             config -> {
                 config.addStaticFiles("/public");
@@ -182,7 +178,7 @@ public class Main {
         Connection connection = null;
         try {
             // create a database connection
-            connection = DriverManager.getConnection("jdbc:sqlite:capstone.db");
+            connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
             setupDB(connection);
             jdbi = Jdbi.create(connection).installPlugin(new SQLitePlugin());
             types = jdbi.withHandle(
@@ -193,7 +189,6 @@ public class Main {
                 }
             );
             setupControllers(app);
-            Window.main(args);
         } catch (SQLException e) {
             // if the error message is "out of memory",
             // it probably means no database file is found

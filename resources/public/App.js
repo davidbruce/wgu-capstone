@@ -1,8 +1,43 @@
-window.simulations = 0;
-window.maxSimulations = () => document.getElementsByName("number_of_simulations")[0].value;
-window.progressbar = document.getElementsByClassName("progress-bar")[0];
-//window.results = [];
+document.addEventListener("DOMContentLoaded", (event) => {
+    window.simulations = 0;
+    window.maxSimulations = () => document.getElementsByName("number_of_simulations")[0].value;
+    window.progressbar = () => document.getElementsByClassName("progress-bar")[0];
+});
 
+
+window.runGame = () => {
+    window.observer.observe(document, {
+      childList: true,
+      subtree: true
+    });
+    var url = window.location.href;
+    var gamesetId = url.substring(url.lastIndexOf('/') + 1);
+    window.turns = [];
+    if (window.gs == null) {
+        fetch(url + '/simulate')
+            .then(response =>
+                response.json()
+            ).then(data => {
+                window.gs = data;
+                window.game = new RPGCombatClient();
+            });
+    }
+    else {
+        window.game = new RPGCombatClient();
+    }
+}
+
+window.resetGame = () => {
+    if (window.game != null) {
+        window.simulations = 0;
+        window.progressbar().style.width = "0%";
+        window.progressbar().innerText = "0%";
+        window.progressbar().setAttribute("aria-valuenow", 0);
+        window.game.unsub();
+        window.game.client.stop();
+    }
+    window.runGame();
+}
 class RPGCombatClient {
   constructor() {
     this.client = BoardgameIO.Client({ game: RPGCombat, debug: true });
@@ -11,6 +46,7 @@ class RPGCombatClient {
   }
 
   update(state) {
+//    console.log(state.ctx.playOrder);
     if (state.deltalog != null) {
         var payload = state.deltalog[0].action.payload;
         var player;
@@ -31,45 +67,44 @@ class RPGCombatClient {
         });
     }
     if (state.ctx.gameover) {
-        if (window.simulations != window.maxSimulations()) {
-                var results = {};
-                if (state.ctx.gameover.winner === "0") {
-                    results.winner = window.player;
-                    results.loser = window.enemy;
-                }
-                else {
-                    results.winner = window.enemy;
-                    results.loser = window.player;
-                }
-                results.turns = window.turns;
-
-                var url = window.location.href;
-                            var request = new Request(url + '/simulate', {
-                                method: 'post',
-                                headers: {
-                                   'Accept': 'application/json, text/plain, */*',
-                                   'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(results)
-                            });
-                          fetch(request)
-                                .then(() => {
-                                    console.log("Save success");
-                                })
-                                .catch(() => {
-                                    console.log("Failed to save!");
-                                });
-              window.simulations++;
-              var percent = Math.trunc((window.simulations / window.maxSimulations()) * 100);
-              window.progressbar.style.width = percent + "%";
-              window.progressbar.textContent = percent + "%";
-              window.progressbar.setAttribute("aria-valuenow", percent);
-              console.log(window.simulations);
-              window.game.unsub();
-              window.game.client.stop();
-              window.runGame();
+        var results = {};
+        if (state.ctx.gameover.winner === "0") {
+            results.winner = window.player;
+            results.loser = window.enemy;
         }
+        else {
+            results.winner = window.enemy;
+            results.loser = window.player;
+        }
+        results.turns = window.turns;
 
+        var url = window.location.href;
+                    var request = new Request(url + '/simulate', {
+                        method: 'post',
+                        headers: {
+                           'Accept': 'application/json, text/plain, */*',
+                           'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(results)
+                    });
+                  fetch(request)
+                        .then(() => {
+                            console.log("Save success");
+                        })
+                        .catch(() => {
+                            console.log("Failed to save!");
+                        });
+      window.simulations++;
+      var percent = Math.trunc((window.simulations / window.maxSimulations()) * 100);
+      window.progressbar().style.width = percent + "%";
+      window.progressbar().innerText = percent + "%";
+      window.progressbar().setAttribute("aria-valuenow", percent);
+      console.log(window.simulations);
+      if (window.simulations < window.maxSimulations()) {
+        window.game.unsub();
+        window.game.client.stop();
+        window.runGame();
+      }
     }
   }
 }
@@ -119,10 +154,38 @@ function getPlayers() {
             enemy: JSON.parse(JSON.stringify(window.enemy))
     }
 }
+
+function changeTurnOrder(G, ctx)  {
+
+}
 var RPGCombat = {
   setup: () => getPlayers(),
-  turn: {
-    moveLimit: 1,
+ turn: {
+        moveLimit: 1,
+        order: {
+            first: (G, ctx) => {
+                ctx.playOrderPos = 0
+                return ctx.playOrderPos;
+            },
+            next: (G, ctx) => {
+                ctx.playOrderPos = (ctx.playOrderPos + 1);
+                if (ctx.playOrderPos == ctx.numPlayers) {
+                    return undefined;
+                }
+                return ctx.playOrderPos;
+            },
+            playOrder: (G, ctx) => {
+               if (G.player.character.speed == G.enemy.character.speed) {
+                      var firstPlayer = (Math.random() > 0.5) ? 1 : 0;
+                      return [firstPlayer.toString(), (firstPlayer == 0 ? 1 : 0).toString()];
+               }
+               if (G.player.character.speed < G.enemy.character.speed) {
+                    return ["1", "0"];
+               } else {
+                    return ["0", "1"];
+               }
+            }
+        }
   },
 
   moves: {
@@ -132,15 +195,41 @@ var RPGCombat = {
         }
         G.damage = 0;
         if (ctx.currentPlayer === '0') {
-            G.damage = damage(G.player, G.enemy, id);
-            G.enemy.character.currentHP -= G.damage;
+            var move = G.player.actions[id];
+            if (move.damage > 0) {
+                G.damage = damage(G.player, G.enemy, move);
+                G.enemy.character.currentHP -= G.damage;
+            }
+            else {
+                G.damage = 0;
+            }
+            if (move.effect != "") {
+                var effects = move.effect.split(';');
+                effects.forEach(effect => {
+                    var split = effect.split(":");
+                    var stat = split[0];
+                    var amount = split[1];
+                    switch (stat) {
+                        case "PA":
+                            G.player.character.phyAtk *= (1.2 * amount);
+                        case "PD":
+                            G.player.character.phyDef *= (1.2 * amount);
+                        case "MA":
+                            G.player.character.magAtk *= (1.2 * amount);
+                        case "MD":
+                            G.player.character.magDef *= (1.2 * amount);
+                        case "SPD":
+                            G.player.character.speed *= (1.2 * amount);
+                    }
+                });
+            }
         } else {
-            G.damage = damage(G.enemy, G.player, id);
+            var move = G.enemy.actions[id];
+            G.damage = damage(G.enemy, G.player, move);
             G.player.character.currentHP -= G.damage;
         }
     }
   },
-
   endIf: (G, ctx) => {
     var finished = false
     if (ctx.currentPlayer === '0' && G.enemy.character.currentHP < 1) {
@@ -164,15 +253,60 @@ var RPGCombat = {
   }
 };
 
-function damage(attacker, defender, action) {
-    var move = attacker.actions[action];
+function damage(attacker, defender, move) {
+    var weakness = (atkType, defType) => {
+        switch(atkType) {
+            case "1": // Fire
+                if (defType == "2") {
+                    return 0.5;
+                }
+                else if (defType == "4") {
+                    return 1.75;
+                }
+            case "2": // Water
+                if (defType == "3") {
+                    return 0.5;
+                }
+                else if (defType == "1") {
+                    return 1.75;
+                }
+            case "3": // Earth
+                if (defType == "4") {
+                    return 0.5;
+                }
+                else if (defType == "2") {
+                    return 1.75;
+                }
+            case "4": // Wind
+                if (defType == "1") {
+                    return 0.5;
+                }
+                else if (defType == "3") {
+                    return 1.75;
+                }
+            case "5": // Light
+                if (defType == "6") {
+                    return 1.75;
+                }
+            case "6": // Dark
+                if (defType == "5") {
+                    return 1.75;
+                }
+        }
+
+    }
     return Math.floor(
             (
-                22 * move.damage * (move.category === "Physical" ?
-                (attacker.character.phyDef/defender.character.phyDef) :
-                (attacker.character.magDef/defender.character.magDef))
-                / 50
-            ) + 2
+                (100 / 5) * //base
+                move.damage * // move damage
+                (move.category === 0 ?
+                (attacker.character.phyAtk/defender.character.phyDef) : //if phy use phy def
+                (attacker.character.magAtk/defender.character.magDef)) //if mag use mag def
+                / 75
+            ) * (move.type == attacker.character.type ? 1.25 : 1) //type bonus
+              * (weakness(move.type, defender.character.type)) //type resistance
+              * (Math.random() * (100 - 85) + 85) //random number for variance
+              / 100
     );
 }
 
@@ -206,36 +340,3 @@ function dispatchChangeEvent (node) {
     node.dispatchEvent(changeEvent);
 }
 
-window.runGame = () => {
-    window.observer.observe(document, {
-      childList: true,
-      subtree: true
-    });
-    var url = window.location.href;
-    var gamesetId = url.substring(url.lastIndexOf('/') + 1);
-    window.turns = [];
-    if (window.gs == null) {
-        fetch(url + '/simulate')
-            .then(response =>
-                response.json()
-            ).then(data => {
-                window.gs = data;
-                window.game = new RPGCombatClient();
-            });
-    }
-    else {
-        window.game = new RPGCombatClient();
-    }
-}
-
-window.resetGame = () => {
-    if (window.game != null) {
-        window.simulations = 0;
-        window.progressbar.style.width = "0%";
-        window.progressbar.textContent = "0%";
-        window.progressbar.setAttribute("aria-valuenow", 0);
-        window.game.unsub();
-        window.game.client.stop();
-    }
-    window.runGame();
-}
