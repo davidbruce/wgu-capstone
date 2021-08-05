@@ -117,7 +117,7 @@ function generatePlayer() {
         character = randomCharacters[Math.floor(Math.random() * randomCharacters.length)]
     } else {
         character = window.gs.characters[Math.floor(Math.random() * window.gs.characters.length)]
-        window.gs.maxCharacterTestCount++;
+        window.gs.maxCharacterTestCount += 10;
     }
     character.testCount++;
 

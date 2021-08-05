@@ -2,8 +2,8 @@ package com.wgu.capstone.views;
 
 import java.util.List;
 
-import static j2html.TagCreator.*;
 import static j2html.TagCreator.div;
+import static j2html.TagCreator.hr;
 
 public class ActionsView {
 
@@ -11,9 +11,8 @@ public class ActionsView {
         return MainTemplate.mainView
             ("actions",
                  div(
-                     TableTemplate.tableHeader("Actions", "/actions/create", true),
-                     TableTemplate.tableBody(headers, data, "/action-values/", "/actions/"),
-                     TableTemplate.tableFooter(page, count, "/actions")
+                     TableTemplate.tableHeader("Actions", "/actions/create", true, page, count, "/actions"),
+                     TableTemplate.tableBody(headers, data, "/action-values/", "/actions/")
                  )
             );
     }

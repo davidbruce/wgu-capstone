@@ -10,9 +10,8 @@ public class ActionValuesView {
         return MainTemplate.mainView
             ("action-values",
                 div(
-                    TableTemplate.tableHeader(title, "/action-values/" + actionId + "/create", true),
-                    TableTemplate.tableBody(headers, data, null, "/action-values/" + actionId + "/"),
-                    TableTemplate.tableFooter(page, count, "/action-values/" + actionId)
+                    TableTemplate.tableHeader(title, "/action-values/" + actionId + "/create", true, page, count, "/action-values/" + actionId),
+                    TableTemplate.tableBody(headers, data, null, "/action-values/" + actionId + "/")
                 )
             );
     }

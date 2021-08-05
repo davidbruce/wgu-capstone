@@ -9,9 +9,8 @@ public class CharacterValuesView {
         return MainTemplate.mainView
             ("character-values",
                 div(
-                    TableTemplate.tableHeader(title, "/character-values/" + characterId + "/create", true),
-                    TableTemplate.tableBody(headers, data, null, "/character-values/" + characterId + "/"),
-                    TableTemplate.tableFooter(page, count, "/character-values/" + characterId)
+                    TableTemplate.tableHeader(title, "/character-values/" + characterId + "/create", true, page, count, "/character-values/" + characterId),
+                    TableTemplate.tableBody(headers, data, null, "/character-values/" + characterId + "/")
                 )
             );
     }

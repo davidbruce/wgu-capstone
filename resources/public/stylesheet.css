@@ -40,8 +40,7 @@ body {
     padding: .375rem .75rem;
     border-radius: 0.25rem;
 }
-.nav-link {
-    margin-top: 0.5rem;
+#sidebar .nav-link {
     border-radius: .25rem;
 }
 
@@ -164,4 +163,8 @@ body {
 
 .progress {
     border: 1px solid #dee2e6 !important;
+}
+
+.debug-panel {
+    display: none !important;
 }

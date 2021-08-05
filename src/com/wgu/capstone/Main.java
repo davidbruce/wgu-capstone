@@ -146,20 +146,7 @@ public class Main {
         CharacterValuesController.createRoutes(app);
         GameSetsController.createRoutes(app);
         GameSetValuesController.createRoutes(app);
-        app.get("/game", ctx -> ctx.html(
-            MainTemplate.mainView("game",
-                button(attrs(".btn"), "Open").attr("onClick", "window.runGame()"),
-                div(
-                    rawHtml("""
-                            <script type="text/javascript">
-                            var script = document.createElement('script')
-                            script.src = '/boardgameio.min.js'
-                            document.head.append(script); 
-                            </script>
-                        """)
-//                    script().withType("text/javascript").withSrc("/boardgameio.min.js"),
-                ))
-        ));
+        SimulationsController.createRoutes(app);
         actionSets(app);
     }
 

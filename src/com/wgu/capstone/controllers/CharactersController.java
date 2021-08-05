@@ -57,7 +57,8 @@ public class CharactersController {
             form(
                 textFormControl("Name", "Name of the move."),
                 selectFormControl("Type", Main.types.stream().collect(Collectors.toMap((List<String> item) -> item.get(1), (List<String> item) -> item.get(0)))),
-                button(attrs(".btn"), "Submit").withType("submit")
+                button(attrs(".btn"), "Submit").withType("submit"),
+                cancelFormButton("Cancel")
             ).withAction("/characters/create")
                 .withMethod("post")
                 .attr("hx-boost", "true")

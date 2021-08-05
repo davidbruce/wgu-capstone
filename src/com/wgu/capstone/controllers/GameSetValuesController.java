@@ -103,7 +103,7 @@ public class GameSetValuesController {
                     page = Integer.parseInt(ctx.queryParam("page"));
                 }
                 int offset = 10 * (page - 1);
-                    List<String> gameSet = Main.jdbi.withHandle(
+                List<String> gameSet = Main.jdbi.withHandle(
                     handle -> {
                         return handle.createQuery("""
                                 SELECT gs.id,
@@ -191,7 +191,7 @@ public class GameSetValuesController {
                                     rs.getString("speed")
                                 )
                             ))
-                            .list() ;
+                            .list();
                     }
                 );
                 int countActions = Integer.parseInt(Main.jdbi.withHandle(
@@ -226,22 +226,26 @@ public class GameSetValuesController {
                 ctx.html(
                     MainTemplate.mainView("game-sets",
                       div(
-                              attrs(".flex-column.mb-auto"),
+                              attrs(".d-flex.justify-content-between.mb-auto"),
+                              h4(
+                                      attrs(".bd-highlight"),
+                                      gameSet.get(1)
+                              ),
                               ul(
                                       attrs(".nav.nav-pills.d-flex.justify-content-center"),
                                       li(
                                               attrs(".nav-item"),
                                               a(
                                                       attrs(".nav-link.active.me-2"),
-                                                      text("Game Set Data")
-                                              ).withHref("#")
+                                                      text("Game Set Values")
+                                              ).withHref("/game-set-values/" + ctx.pathParam("gameset_id"))
                                       ),
                                       li(
                                               attrs(".nav-item"),
                                               a(
-                                                      attrs(".nav-link.link-dark.me-2"),
+                                                      attrs(".nav-link.link-dark.me-2.border"),
                                                       text("Simulation Results")
-                                              ).withHref("#")
+                                              ).withHref("/game-set-simulations/" + ctx.pathParam("gameset_id"))
                                       )
                               )
                       ),
@@ -283,8 +287,8 @@ public class GameSetValuesController {
                                 """)
                                   ).withStyle("display: none;")
                         ),
-                        GameSetActionsView.getPartial(gameSet.get(0), "Game Set Actions: " +  gameSet.get(1), Arrays.asList("ID", "Name", "Category", "Type", "Damage", "Accuracy", "Effect"), gameSetActionsData, page, countActions),
-                        GameSetCharactersView.getPartial(gameSet.get(0), "Game Set Characters: " + gameSet.get(1), Arrays.asList("ID", "Name", "Type", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), gameSetCharactersData, page, countCharacters)
+                        GameSetActionsView.getPartial(gameSet.get(0), "Actions", Arrays.asList("ID", "Name", "Category", "Type", "Damage", "Accuracy", "Effect"), gameSetActionsData, page, countActions),
+                        GameSetCharactersView.getPartial(gameSet.get(0), "Characters", Arrays.asList("ID", "Name", "Type", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), gameSetCharactersData, page, countCharacters)
                     )
                 );
             }

@@ -11,7 +11,7 @@ import static j2html.TagCreator.*;
 public class TableTemplate {
     public static ContainerTag tableBody(List<String> headers, List<List<String>> values, String childLink, String updelLink) {
         return table(
-            attrs(".table.table-sm"),
+            attrs(".table.table-sm.table-hover"),
             thead(
                 tr(
                     each(headers, header -> th(header).attr("scope", "col")),
@@ -68,12 +68,21 @@ public class TableTemplate {
         );
     }
     public static ContainerTag tableHeader(String title, String route, boolean showButtons) {
-        return tableHeader(title, "Create", route, showButtons);
+        return tableHeader(title, "Create", route, showButtons, 0, 0, null);
     }
+    public static ContainerTag tableHeader(String title, String route, boolean showButtons, int page, int count, String pageRoute) {
+        return tableHeader(title, "Create", route, showButtons, page, count, pageRoute);
+    }
+
     public static ContainerTag tableHeader(String title, String buttonText, String route, boolean showButtons) {
+        return tableHeader(title, buttonText, route, showButtons, 0, 0, null);
+    }
+
+    public static ContainerTag tableHeader(String title, String buttonText, String route, boolean showButtons, int page, int count, String pageRoute) {
         return div(
-            attrs(".d-flex.justify-content-between.bd-highlight.mb-3"),
+            attrs(".d-flex.justify-content-between.bd-highlight.mb-2"),
             h4(attrs(".p-2.bd-highlight"), title),
+            iff(pageRoute != null, tablePaging(page, count, pageRoute)),
             iff(showButtons,
                 div(
                     attrs(".p-2.d-flex.justify-content-center"),
@@ -87,32 +96,37 @@ public class TableTemplate {
                         .attr("hx-get", route)
                         .attr("hx-target", "#form")
                         .attr("hx-swap", "innerHTML")
-//                    button(attrs(".btn.me-2.disabled"), "Update"),
-//                    button(attrs(".btn.disabled"), "Delete")
                 )
             )
         );
     }
-    public static ContainerTag tableFooter(int page, int count, String route) {
+    public static ContainerTag tablePaging(int page, int count, String route) {
         List<DomContent> pages = new ArrayList<>();
-        int maxPage = (int)Math.ceil(count / 15);
-        if (maxPage == 0) {
-            maxPage = 1;
+        int maxPage = (int)Math.ceil(count / 15.0);
+        int endPage = maxPage;
+        if (endPage == 0) {
+            endPage = 1;
         }
         int startPage = page - 2;
-        if (startPage < 1) {
-            startPage = page;
-        }
-        if (page == 2) {
+        if (page < 3) {
             startPage = 1;
+            if (endPage > 5) {
+                endPage = 5;
+            }
         }
 
-        if (maxPage > 5) {
-            maxPage = 5;
-        } else {
+        if (endPage > 5) {
+            if (endPage - page >= 2) {
+                endPage = page + 2;
+            }
+            if (endPage - startPage < 5) {
+                startPage = endPage - 4;
+            }
+        }
+        else {
             startPage = 1;
         }
-        for (int i = startPage; i <= maxPage; i++) {
+        for (int i = startPage; i <= endPage; i++) {
             pages.add(
               li(
                   attrs(".page-item.me-2" + (page == i ? ".active" : "")),
@@ -136,19 +150,20 @@ public class TableTemplate {
                 attrs(".p-2.bd-highlight"),
                 ul(
                     attrs(".pagination"),
+
                     li(
                         attrs(".page-item.me-2" + (page == 1 ? ".disabled" : "")),
                         a(
                             attrs(".page-link.link-dark"),
-                            "Previous"
-                        ).withHref(route + "?page=" + (page - 1))
+                            "Start"
+                        ).withHref(route + "?page=" + 1)
                     ),
                     li(
-                        attrs(".page-item.me-2" + (page == maxPage ? ".disabled" : "")),
+                        attrs(".page-item.me-2" + (page == maxPage || maxPage == 0 ? ".disabled" : "")),
                         a(
                             attrs(".page-link.link-dark"),
-                            "Next"
-                        ).withHref(route + "?page=" + (page + 1))
+                            "End"
+                        ).withHref(route + "?page=" + (maxPage))
                     )
                 ).withStyle("margin-bottom: 0")
 
