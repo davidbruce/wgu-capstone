@@ -73,10 +73,27 @@ public class MainTemplate {
             ),
             hr(),
             TagCreator.ul(attrs(".nav.nav-pills.flex-column.mb-auto.px-2"),
-                        sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "game-sets" , ".active", ".border"), "bi-sliders", "Game Sets", "/game-sets"),
-                        sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "types" , ".active", ".border"), "bi-table", "Types", "/types"),
-                        sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route.contains("action") , ".active", ".border"), "bi-hurricane", "Actions", "/actions"),
-                        sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route.contains("character") , ".active", ".border"), "bi-person-circle", "Characters", "/characters")
+                    li(
+                            attrs(".d-flex.justify-content-center"),
+                    button(attrs(".btn.me-2"), i(attrs(".bi.bi-arrow-left")))
+                            .attr("onclick",
+                                    """
+                                          window.history.back()  
+                                          """
+                            ),
+                    button(attrs(".btn.me-2"), i(attrs(".bi.bi-arrow-right")))
+                            .attr("onclick",
+                                    """
+                                          window.history.forward()  
+                                          """
+                            )
+                    ),
+                    hr(),
+                    sidebarLi(".mt-2.nav-link.link-dark", "bi-speedometer2", "Dashboard", "/game-sets"),
+                    sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "game-sets" , ".active", ".border"), "bi-sliders", "Game Sets", "/game-sets"),
+                    sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "types" , ".active", ".border"), "bi-table", "Types", "/types"),
+                    sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route.contains("action") , ".active", ".border"), "bi-hurricane", "Actions", "/actions"),
+                    sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route.contains("character") , ".active", ".border"), "bi-person-circle", "Characters", "/characters")
             ).attr("hx-boost", "true"),
             hr(),
             div(

@@ -22,7 +22,7 @@ public class CharacterValuesController {
                     handle -> {
                         return handle.createQuery("""
                                 SELECT c.id,
-                                 c.name || ' | ' ||  t.name  as name
+                                 c.name
                                  FROM Characters c inner join Types t on c.type_id = t.id
                                  WHERE c.id = :character_id
                             """)

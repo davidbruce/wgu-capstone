@@ -22,8 +22,7 @@ public class ActionValuesController {
                     handle -> {
                         return handle.createQuery("""
                                 SELECT a.id,
-                                 a.name || ' | ' ||  t.name || ' | ' ||
-                                 (CASE a.category WHEN 0 THEN 'Physical' ELSE 'Magical'END) as name
+                                 a.name
                                  FROM Actions a inner join Types t on a.type_id = t.id
                                  WHERE a.id = :action_id
                             """)
