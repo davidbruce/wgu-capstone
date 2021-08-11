@@ -5,6 +5,7 @@ import com.wgu.capstone.models.*;
 import com.wgu.capstone.models.Character;
 import com.wgu.capstone.views.GameSetActionsView;
 import com.wgu.capstone.views.GameSetCharactersView;
+import com.wgu.capstone.views.GameSetNavView;
 import com.wgu.capstone.views.MainTemplate;
 import io.javalin.Javalin;
 import org.jdbi.v3.core.Handle;
@@ -98,200 +99,177 @@ public class GameSetValuesController {
        getActions();
        getCharacters();
        app.get("/game-set-values/:gameset_id", ctx -> {
-                int page = 1;
-                if (ctx.queryParam("page") != null) {
-                    page = Integer.parseInt(ctx.queryParam("page"));
-                }
-                int offset = 10 * (page - 1);
-                List<String> gameSet = Main.jdbi.withHandle(
-                    handle -> {
-                        return handle.createQuery("""
-                                SELECT gs.id,
-                                 gs.name
-                                 FROM GameSets gs 
-                                 WHERE gs.id = :gameset_id
-                            """)
-                            .bind("gameset_id", ctx.pathParam("gameset_id"))
-                            .map(((rs, context) ->
-                                Arrays.asList(
-                                    rs.getString("id"),
-                                    rs.getString("name")
-                                )
-                            ))
-                            .list().get(0);
-                    }
-                );
-                List<List<String>> gameSetActionsData = Main.jdbi.withHandle(
-                    handle -> {
-                        return handle.createQuery("""
-                            SELECT 
-                             gsa.id,
-                             a.name, 
-                             (CASE a.category WHEN 0 THEN 'Physical' ELSE 'Magical'END) as category,
-                             t.name as type, 
-                             av.damage,
-                             av.accuracy,
-                             av.effect 
-                             FROM GameSetActions gsa
-                             INNER JOIN Actions a ON a.id = gsa.action_id 
-                             INNER JOIN Types t ON t.id = a.type_id 
-                             INNER JOIN ActionValues av ON av.id = gsa.actionvalue_id
-                             WHERE gsa.gameset_id = :gameset_id 
-                             LIMIT 10 OFFSET :offset
-                            """)
-                            .bind("gameset_id", ctx.pathParam("gameset_id"))
-                            .bind("offset", offset)
-                            .map(((rs, context) ->
-                                Arrays.asList(
-                                    rs.getString("id"),
-                                    rs.getString("name"),
-                                    rs.getString("category"),
-                                    rs.getString("type"),
-                                    rs.getString("damage"),
-                                    rs.getString("accuracy"),
-                                    rs.getString("effect")
-                                )
-                            ))
-                            .list() ;
-                    }
-                );
+                   int page = 1;
+                   if (ctx.queryParam("page") != null) {
+                       page = Integer.parseInt(ctx.queryParam("page"));
+                   }
+                   int offset = 10 * (page - 1);
+                   List<String> gameSet = Main.jdbi.withHandle(
+                           handle -> {
+                               return handle.createQuery("""
+                                           SELECT gs.id,
+                                            gs.name
+                                            FROM GameSets gs 
+                                            WHERE gs.id = :gameset_id
+                                       """)
+                                       .bind("gameset_id", ctx.pathParam("gameset_id"))
+                                       .map(((rs, context) ->
+                                               Arrays.asList(
+                                                       rs.getString("id"),
+                                                       rs.getString("name")
+                                               )
+                                       ))
+                                       .list().get(0);
+                           }
+                   );
+                   List<List<String>> gameSetActionsData = Main.jdbi.withHandle(
+                           handle -> {
+                               return handle.createQuery("""
+                                       SELECT 
+                                        gsa.id,
+                                        a.name, 
+                                        (CASE a.category WHEN 0 THEN 'Physical' ELSE 'Magical'END) as category,
+                                        t.name as type, 
+                                        av.damage,
+                                        av.accuracy,
+                                        av.effect 
+                                        FROM GameSetActions gsa
+                                        INNER JOIN Actions a ON a.id = gsa.action_id 
+                                        INNER JOIN Types t ON t.id = a.type_id 
+                                        INNER JOIN ActionValues av ON av.id = gsa.actionvalue_id
+                                        WHERE gsa.gameset_id = :gameset_id 
+                                        LIMIT 10 OFFSET :offset
+                                       """)
+                                       .bind("gameset_id", ctx.pathParam("gameset_id"))
+                                       .bind("offset", offset)
+                                       .map(((rs, context) ->
+                                               Arrays.asList(
+                                                       rs.getString("id"),
+                                                       rs.getString("name"),
+                                                       rs.getString("category"),
+                                                       rs.getString("type"),
+                                                       rs.getString("damage"),
+                                                       rs.getString("accuracy"),
+                                                       rs.getString("effect")
+                                               )
+                                       ))
+                                       .list();
+                           }
+                   );
 
-                List<List<String>> gameSetCharactersData = Main.jdbi.withHandle(
-                    handle -> {
-                        return handle.createQuery("""
-                                SELECT 
-                                 gsc.id,
-                                 c.name, 
-                                 t.name as type, 
-                                 cv.hp,
-                                 cv.phy_attack,
-                                 cv.phy_defense,
-                                 cv.mag_attack,
-                                 cv.mag_defense,
-                                 cv.speed
-                                 FROM GameSetCharacters gsc
-                                 INNER JOIN Characters c ON c.id = gsc.character_id 
-                                 INNER JOIN Types t ON t.id = c.type_id 
-                                 INNER JOIN CharacterValues cv ON cv.id = gsc.charactervalue_id
-                                 WHERE gsc.gameset_id = :gameset_id 
-                                 LIMIT 10 OFFSET :offset
-                                """)
-                            .bind("gameset_id", ctx.pathParam("gameset_id"))
-                            .bind("offset", offset)
-                            .map(((rs, context) ->
-                                Arrays.asList(
-                                    rs.getString("id"),
-                                    rs.getString("name"),
-                                    rs.getString("type"),
-                                    rs.getString("hp"),
-                                    rs.getString("phy_attack"),
-                                    rs.getString("phy_defense"),
-                                    rs.getString("mag_attack"),
-                                    rs.getString("mag_defense"),
-                                    rs.getString("speed")
-                                )
-                            ))
-                            .list();
-                    }
-                );
-                int countActions = Integer.parseInt(Main.jdbi.withHandle(
-                    handle -> {
-                        return handle.select("""
-                                            SELECT COUNT(*) as count FROM GameSetActions
-                                            WHERE gameset_id = :gameset_id """)
-                            .bind("gameset_id", ctx.pathParam("gameset_id"))
-                            .map(((rs, context) ->
-                                Arrays.asList(
-                                    rs.getString("count")
-                                )
-                            ))
-                            .list().get(0).get(0);
-                    }
-                ));
-                int countCharacters = Integer.parseInt(Main.jdbi.withHandle(
-                    handle -> {
-                        return handle.select("""
-                                            SELECT COUNT(*) as count FROM GameSetCharacters
-                                            WHERE gameset_id = :gameset_id
-                                        """)
-                            .bind("gameset_id", ctx.pathParam("gameset_id"))
-                            .map(((rs, context) ->
-                                Arrays.asList(
-                                    rs.getString("count")
-                                )
-                            ))
-                            .list().get(0).get(0);
-                    }
-                ));
-                ctx.html(
-                    MainTemplate.mainView("game-sets",
-                      div(
-                              attrs(".d-flex.justify-content-between.mb-auto"),
-                              h4(
-                                      attrs(".bd-highlight"),
-                                      gameSet.get(1)
-                              ),
-                              ul(
-                                      attrs(".nav.nav-pills.d-flex.justify-content-center"),
-                                      li(
-                                              attrs(".nav-item"),
-                                              a(
-                                                      attrs(".nav-link.active.me-2"),
-                                                      text("Game Set Values")
-                                              ).withHref("/game-set-values/" + ctx.pathParam("gameset_id"))
-                                      ),
-                                      li(
-                                              attrs(".nav-item"),
-                                              a(
-                                                      attrs(".nav-link.link-dark.me-2.border"),
-                                                      text("Simulation Results")
-                                              ).withHref("/game-set-simulations/" + ctx.pathParam("gameset_id"))
-                                      )
-                              )
-                      ),
-                      div(
-                              attrs(".row.g-3"),
-                              div(
-                                      attrs(".col-auto"),
-                                      textFormControl("Number of Simulations", "Number of simluations", "50")
-                              ),
-                              div(
-                                      attrs(".col-auto"),
-                                      div(
-                                              attrs(".mb-3"),
-                                              label("Run Simulation Button").withStyle("visibility:hidden;"),
-                                              button(attrs(".btn.form-control"),
-                                                      div(attrs(".wrapper"),
-                                                      i(attrs(".bi.bi-joystick.me-2")),
-                                                      text("Run Simulations"))).attr("onClick", "window.resetGame()")
-                                      )
-                              ),
-                              div(
-                                      attrs(".col-md.pt-4.mt-4"),
-                                      div(
-                                              attrs(".progress"),
-                                              div(attrs(".progress-bar"))
-                                                      .withRole("progressbar")
-                                                      .attr("aria-valuenow", "0")
-                                                      .attr("aria-valuemin", "0")
-                                                      .attr("aria-valuemax", "100")
-                                      )
-                              ),
-                              div(
-                                                      rawHtml("""
-                                    <script type="text/javascript">
-                                    var script = document.createElement('script')
-                                    script.src = '/boardgameio.min.js'
-                                    document.head.append(script); 
-                                    </script>
-                                """)
-                                  ).withStyle("display: none;")
-                        ),
-                        GameSetActionsView.getPartial(gameSet.get(0), "Actions", Arrays.asList("ID", "Name", "Category", "Type", "Damage", "Accuracy", "Effect"), gameSetActionsData, page, countActions),
-                        GameSetCharactersView.getPartial(gameSet.get(0), "Characters", Arrays.asList("ID", "Name", "Type", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), gameSetCharactersData, page, countCharacters)
-                    )
-                );
-            }
+                   List<List<String>> gameSetCharactersData = Main.jdbi.withHandle(
+                           handle -> {
+                               return handle.createQuery("""
+                                       SELECT 
+                                        gsc.id,
+                                        c.name, 
+                                        t.name as type, 
+                                        cv.hp,
+                                        cv.phy_attack,
+                                        cv.phy_defense,
+                                        cv.mag_attack,
+                                        cv.mag_defense,
+                                        cv.speed
+                                        FROM GameSetCharacters gsc
+                                        INNER JOIN Characters c ON c.id = gsc.character_id 
+                                        INNER JOIN Types t ON t.id = c.type_id 
+                                        INNER JOIN CharacterValues cv ON cv.id = gsc.charactervalue_id
+                                        WHERE gsc.gameset_id = :gameset_id 
+                                        LIMIT 10 OFFSET :offset
+                                       """)
+                                       .bind("gameset_id", ctx.pathParam("gameset_id"))
+                                       .bind("offset", offset)
+                                       .map(((rs, context) ->
+                                               Arrays.asList(
+                                                       rs.getString("id"),
+                                                       rs.getString("name"),
+                                                       rs.getString("type"),
+                                                       rs.getString("hp"),
+                                                       rs.getString("phy_attack"),
+                                                       rs.getString("phy_defense"),
+                                                       rs.getString("mag_attack"),
+                                                       rs.getString("mag_defense"),
+                                                       rs.getString("speed")
+                                               )
+                                       ))
+                                       .list();
+                           }
+                   );
+                   int countActions = Integer.parseInt(Main.jdbi.withHandle(
+                           handle -> {
+                               return handle.select("""
+                                       SELECT COUNT(*) as count FROM GameSetActions
+                                       WHERE gameset_id = :gameset_id """)
+                                       .bind("gameset_id", ctx.pathParam("gameset_id"))
+                                       .map(((rs, context) ->
+                                               Arrays.asList(
+                                                       rs.getString("count")
+                                               )
+                                       ))
+                                       .list().get(0).get(0);
+                           }
+                   ));
+                   int countCharacters = Integer.parseInt(Main.jdbi.withHandle(
+                           handle -> {
+                               return handle.select("""
+                                           SELECT COUNT(*) as count FROM GameSetCharacters
+                                           WHERE gameset_id = :gameset_id
+                                       """)
+                                       .bind("gameset_id", ctx.pathParam("gameset_id"))
+                                       .map(((rs, context) ->
+                                               Arrays.asList(
+                                                       rs.getString("count")
+                                               )
+                                       ))
+                                       .list().get(0).get(0);
+                           }
+                   ));
+                   ctx.html(
+                           MainTemplate.mainView("game-sets",
+                                   GameSetNavView.gameSetNav(gameSet.get(1), ctx.pathParam("gameset_id"), 0),
+                                   div(
+                                           attrs(".row.g-3"),
+                                           div(
+                                                   attrs(".col-auto"),
+                                                   textFormControl("Number of Simulations", "Number of simluations", "50")
+                                           ),
+                                           div(
+                                                   attrs(".col-auto"),
+                                                   div(
+                                                           attrs(".mb-3"),
+                                                           label("Run Simulation Button").withStyle("visibility:hidden;"),
+                                                           button(attrs(".btn.form-control"),
+                                                                   div(attrs(".wrapper"),
+                                                                           i(attrs(".bi.bi-joystick.me-2")),
+                                                                           text("Run Simulations"))).attr("onClick", "window.resetGame()")
+                                                   )
+                                           ),
+                                           div(
+                                                   attrs(".col-md.pt-4.mt-4"),
+                                                   div(
+                                                           attrs(".progress"),
+                                                           div(attrs(".progress-bar"))
+                                                                   .withRole("progressbar")
+                                                                   .attr("aria-valuenow", "0")
+                                                                   .attr("aria-valuemin", "0")
+                                                                   .attr("aria-valuemax", "100")
+                                                   )
+                                           ),
+                                           div(
+                                                   rawHtml("""
+                                                               <script type="text/javascript">
+                                                               var script = document.createElement('script')
+                                                               script.src = '/boardgameio.min.js'
+                                                               document.head.append(script); 
+                                                               </script>
+                                                           """)
+                                           ).withStyle("display: none;")
+                                   ),
+                                   GameSetActionsView.getPartial(gameSet.get(0), "Actions", Arrays.asList("ID", "Name", "Category", "Type", "Damage", "Accuracy", "Effect"), gameSetActionsData, page, countActions),
+                                   GameSetCharactersView.getPartial(gameSet.get(0), "Characters", Arrays.asList("ID", "Name", "Type", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), gameSetCharactersData, page, countCharacters)
+                           )
+                   );
+               }
        );
        app.get("/game-set-actions/:gameset_id/create", ctx -> ctx.html(
             form(
@@ -446,7 +424,7 @@ public class GameSetValuesController {
                );
                List<Action> actions = Main.jdbi.withHandle(
                    handle -> handle.createQuery("""
-                        SELECT gsa.id, a.name, a.type_id, a.category, av.damage, av.effect FROM GameSetActions gsa 
+                        SELECT gsa.id, a.name, a.type_id, a.category, av.damage, av.accuracy, av.effect FROM GameSetActions gsa 
                         INNER JOIN Actions a on a.id = gsa.action_id 
                         INNER JOIN ActionValues av on av.id = gsa.actionvalue_id 
                         WHERE gsa.gameset_id = :gameset_id;
@@ -459,6 +437,7 @@ public class GameSetValuesController {
                                rs.getString("name"),
                                rs.getString("type_id"),
                                Integer.parseInt(rs.getString("damage")),
+                               Integer.parseInt(rs.getString("accuracy")),
                                Integer.parseInt(rs.getString("category")),
                                rs.getString("effect")
                            )
@@ -474,10 +453,11 @@ public class GameSetValuesController {
                        handle.getConnection().setAutoCommit(false);
                        int simulationId = handle.createQuery(
                                """
-                                       insert into Simulations (id) values (null)
+                                       insert into Simulations (id, gameset_id) values (null, :gameset_id)
                                        returning id
                                        """
                        )
+                               .bind("gameset_id", ctx.pathParam("gameset_id"))
                                .mapTo(Integer.class)
                                .first();
                        int winnerSimId = handle.createQuery(

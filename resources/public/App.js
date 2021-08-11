@@ -134,10 +134,15 @@ function generatePlayer() {
                     .sort(() => Math.random() - 0.5)
                     .slice(0, 4 - randomActions.length)
            );
-           window.gs.maxActionTestCount++
+           window.gs.maxActionTestCount += 10
     }
     else {
         actions = randomActions;
+    }
+    if (actions.filter(action => action.damage > 0).length === 0) {
+        actions[0] = window.gs.actions
+                             .filter(action => action.damage > 0)
+                             .sort(() => Math.random() - 0.5)[0];
     }
     actions.forEach(action => action.testCount++);
     return {
@@ -196,37 +201,12 @@ var RPGCombat = {
         G.damage = 0;
         if (ctx.currentPlayer === '0') {
             var move = G.player.actions[id];
-            if (move.damage > 0) {
-                G.damage = damage(G.player, G.enemy, move);
-                G.enemy.character.currentHP -= G.damage;
-            }
-            else {
-                G.damage = 0;
-            }
-            if (move.effect != "") {
-                var effects = move.effect.split(';');
-                effects.forEach(effect => {
-                    var split = effect.split(":");
-                    var stat = split[0];
-                    var amount = split[1];
-                    switch (stat) {
-                        case "PA":
-                            G.player.character.phyAtk *= (1.2 * amount);
-                        case "PD":
-                            G.player.character.phyDef *= (1.2 * amount);
-                        case "MA":
-                            G.player.character.magAtk *= (1.2 * amount);
-                        case "MD":
-                            G.player.character.magDef *= (1.2 * amount);
-                        case "SPD":
-                            G.player.character.speed *= (1.2 * amount);
-                    }
-                });
-            }
+            performMove(G, G.player, G.enemy, move);
         } else {
             var move = G.enemy.actions[id];
-            G.damage = damage(G.enemy, G.player, move);
-            G.player.character.currentHP -= G.damage;
+            performMove(G, G.enemy, G.player, move);
+//            G.damage = damage(G.enemy, G.player, move);
+//            G.player.character.currentHP -= G.damage;
         }
     }
   },
@@ -252,6 +232,49 @@ var RPGCombat = {
     }
   }
 };
+
+function performMove(G, attacker, defender, move) {
+    var chance = Math.random() * 100 + 1;
+    if (chance > 0 && chance <= move.accuracy || move.accuracy === -1) {
+        if (move.damage > 0) {
+            G.damage = damage(attacker, defender, move);
+            defender.character.currentHP -= G.damage;
+        }
+        else {
+            G.damage = 0;
+        }
+        if (move.effect != "") {
+            var effects = move.effect.split(';');
+            effects.forEach(effect => {
+                var split = effect.split(":");
+                var stat = split[0];
+                var amount = split[1];
+                switch (stat) {
+                    case "PA":
+                        attacker.character.phyAtk *= (1 + (.2 * amount));
+                    case "PD":
+                        attacker.character.phyDef *= (1 + (.2 * amount));
+                    case "MA":
+                        attacker.character.magAtk *= (1 + (.2 * amount));
+                    case "MD":
+                        attacker.character.magDef *= (1 + (.2 * amount));
+                    case "SPD":
+                        attacker.character.speed *= (1 + (.2 * amount));
+                    case "TPA":
+                        defender.character.phyAtk *= (1 + (.2 * amount));
+                    case "TPD":
+                        defender.character.phyDef *= (1 + (.2 * amount));
+                    case "TMA":
+                        defender.character.magAtk *= (1 + (.2 * amount));
+                    case "TMD":
+                        defender.character.magDef *= (1 + (.2 * amount));
+                    case "TSPD":
+                        defender.character.speed *= (1 + (.2 * amount));
+                }
+            });
+        }
+    }
+}
 
 function damage(attacker, defender, move) {
     var weakness = (atkType, defType) => {
@@ -293,11 +316,11 @@ function damage(attacker, defender, move) {
                     return 1.75;
                 }
         }
-
+        return 1;
     }
-    return Math.floor(
+    var result = Math.round(
             (
-                (100 / 5) * //base
+                25 * //base
                 move.damage * // move damage
                 (move.category === 0 ?
                 (attacker.character.phyAtk/defender.character.phyDef) : //if phy use phy def
@@ -305,11 +328,13 @@ function damage(attacker, defender, move) {
                 / 75
             ) * (move.type == attacker.character.type ? 1.25 : 1) //type bonus
               * (weakness(move.type, defender.character.type)) //type resistance
-              * (Math.random() * (100 - 85) + 85) //random number for variance
-              / 100
+              * (1 + (Math.random() * 5 / 100)) //random number for variance
     );
+    if (result < 1) {
+        result = 1;
+    }
+    return result;
 }
-
 
 window.observer = new MutationObserver(function (mutations, mo) {
   var debugPanel = document.getElementsByClassName("debug-panel svelte-1dhkl71")[0];

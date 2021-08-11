@@ -81,7 +81,7 @@ public class ActionValuesController {
             form(
                 textFormControl("Damage", "Amount of damage the move will do."),
                 textFormControl("Accuracy", "50 to 100 value with -1 for never miss."),
-                textFormControl("Effect", "DSL String for different possible effects. Example: MA:U1"),
+                textFormControl("Effect", "DSL String for different possible effects. Example: MA:1;MD:-1"),
                 button(attrs(".btn"), "Submit").withType("submit"),
                 cancelFormButton("Cancel")
             ).withAction("/action-values/" + ctx.pathParam("action_id") + "/create")
@@ -122,7 +122,7 @@ public class ActionValuesController {
                 form(
                     textFormControl("Damage", "Amount of damage the move will do.", data.get(0)),
                     textFormControl("Accuracy", "50 to 100 value with -1 for never miss.", data.get(1)),
-                    textFormControl("Effect", "DSL String for different possible effects. Example: MA:U1", data.get(2)),
+                    textFormControl("Effect", "DSL String for different possible effects. Example: MA:1;MD:-1", data.get(2)),
                     button(attrs(".btn"), "Submit Edit").withType("submit"),
                     cancelFormButton("Cancel")
                 ).withAction("/action-values/" + ctx.pathParam("action_id") + "/update/" + ctx.pathParam("id"))
@@ -164,7 +164,7 @@ public class ActionValuesController {
                 form(
                     textFormControl("Damage", "Amount of damage the move will do.", data.get(0), true),
                     textFormControl("Accuracy", "50 to 100 value with -1 for never miss.", data.get(1), true),
-                    textFormControl("Effect", "DSL String for different possible effects. Example: MA:U1", data.get(2), true),
+                    textFormControl("Effect", "DSL String for different possible effects. Example: MA:1;MD:-1", data.get(2), true),
                     button(attrs(".btn"), "Confirm Delete").withType("submit"),
                     cancelFormButton("Cancel")
                 ).withAction("/action-values/" + ctx.pathParam("action_id") + "/delete/" + ctx.pathParam("id"))

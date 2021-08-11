@@ -9,10 +9,10 @@
      }
 }
 
-#main-wrapper>div.rounded {
+#main-wrapper div.rounded {
     animation: load 0.5s;
     animation-iteration-count: 1;
-    box-shadow: 0rem .5rem 1rem rgba(0,0,0,.15);
+    box-shadow: 0rem .5rem 0.75rem rgba(0,0,0,.15);
     background-color: white;
 }
 
@@ -20,7 +20,7 @@
     margin-top: 0rem;
 }
 #main-wrapper>div {
-    margin-top: 0.75rem;
+    margin-top: 1rem;
 }
 body {
     display: flex;
@@ -163,6 +163,10 @@ body {
 
 .progress {
     border: 1px solid #dee2e6 !important;
+}
+
+.actions-list tbody tr {
+    height: 3.25rem;
 }
 
 .debug-panel {

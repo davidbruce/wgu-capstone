@@ -10,7 +10,12 @@ import java.util.Arrays;
 import static j2html.TagCreator.*;
 
 public class MainTemplate {
+
     public static String mainView(String route, Tag... main) {
+        return mainView(route, true, main);
+    }
+
+    public static String mainView(String route, boolean roundChildren, Tag... main) {
         return document(html(
             head(
                 title("WGU Capstone"),
@@ -38,7 +43,7 @@ public class MainTemplate {
                             attrs("#main-wrapper.p-4"),
                             each(Arrays.asList(main), tag ->
                                 div(
-                                    attrs(".rounded.p-3"),
+                                    attrs(".section" + (roundChildren ? ".rounded.p-3": "")),
                                     tag
                                 )
                             )
@@ -49,20 +54,12 @@ public class MainTemplate {
             script().withSrc("/htmx.min.js"),
             script().withSrc("/bootstrap.bundle.min.js"),
             script().withType("module").withSrc("/App.js")
-//            rawHtml("""
-//                   <script type="module">
-//                   import RPGCombatClient from "./App.js";
-//                   window.runGame = function() {
-//                        new RPGCombatClient(null);
-//                   };
-//                   </script>
-//            """ )
         ));
     }
 
     static ContainerTag sidebar(String route) {
         return div(
-            attrs("#sidebar.d-flex.flex-column.p-3.bg-white"),
+            attrs("#sidebar.d-flex.flex-column.p-3.bg-white.shadow"),
             a(
                 attrs(".d-flex.align-items-center.me-3.link-dark.text-decoration-none"),
                 img(attrs(".bi.me-2"))

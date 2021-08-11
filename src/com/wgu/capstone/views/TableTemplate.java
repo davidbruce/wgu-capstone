@@ -14,7 +14,7 @@ public class TableTemplate {
             attrs(".table.table-sm.table-hover"),
             thead(
                 tr(
-                    each(headers, header -> th(header).attr("scope", "col")),
+                    each(headers, header -> th(attrs(headers.size() > 6 ? ".col" : ".col-2"), header).attr("scope", "col")),
                     iff(updelLink != null || childLink != null, th("").attr("scope", "col")))
                 ),
             tbody(
