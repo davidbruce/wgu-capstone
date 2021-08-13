@@ -99,12 +99,17 @@ public class GameSetValuesController {
        getActions();
        getCharacters();
        app.get("/game-set-values/:gameset_id", ctx -> {
-                   int page = 1;
-                   if (ctx.queryParam("page") != null) {
-                       page = Integer.parseInt(ctx.queryParam("page"));
+                   int actionsPage = 1;
+                   if (ctx.queryParam("actions-page") != null) {
+                       actionsPage = Integer.parseInt(ctx.queryParam("actions-page"));
                    }
-                   int offset = 10 * (page - 1);
-                   List<String> gameSet = Main.jdbi.withHandle(
+                   int actionsOffset = 10 * (actionsPage - 1);
+                   int charactersPage = 1;
+                   if (ctx.queryParam("characters-page") != null) {
+                       charactersPage = Integer.parseInt(ctx.queryParam("characters-page"));
+                   }
+                   int charactersOffset = 10 * (charactersPage - 1);
+                       List<String> gameSet = Main.jdbi.withHandle(
                            handle -> {
                                return handle.createQuery("""
                                            SELECT gs.id,
@@ -141,7 +146,7 @@ public class GameSetValuesController {
                                         LIMIT 10 OFFSET :offset
                                        """)
                                        .bind("gameset_id", ctx.pathParam("gameset_id"))
-                                       .bind("offset", offset)
+                                       .bind("offset", actionsOffset)
                                        .map(((rs, context) ->
                                                Arrays.asList(
                                                        rs.getString("id"),
@@ -178,7 +183,7 @@ public class GameSetValuesController {
                                         LIMIT 10 OFFSET :offset
                                        """)
                                        .bind("gameset_id", ctx.pathParam("gameset_id"))
-                                       .bind("offset", offset)
+                                       .bind("offset", charactersOffset)
                                        .map(((rs, context) ->
                                                Arrays.asList(
                                                        rs.getString("id"),
@@ -261,17 +266,21 @@ public class GameSetValuesController {
                                                                var script = document.createElement('script')
                                                                script.src = '/boardgameio.min.js'
                                                                document.head.append(script); 
+                                                               
+                                                              
                                                                </script>
                                                            """)
                                            ).withStyle("display: none;")
                                    ),
-                                   GameSetActionsView.getPartial(gameSet.get(0), "Actions", Arrays.asList("ID", "Name", "Category", "Type", "Damage", "Accuracy", "Effect"), gameSetActionsData, page, countActions),
-                                   GameSetCharactersView.getPartial(gameSet.get(0), "Characters", Arrays.asList("ID", "Name", "Type", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), gameSetCharactersData, page, countCharacters)
+                                   //due to more complex routing, routes for paging are handled in App.js
+                                   GameSetActionsView.getPartial(gameSet.get(0), "Actions", Arrays.asList("ID", "Name", "Category", "Type", "Damage", "Accuracy", "Effect"), gameSetActionsData, actionsPage, countActions),
+                                   GameSetCharactersView.getPartial(gameSet.get(0), "Characters", Arrays.asList("ID", "Name", "Type", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), gameSetCharactersData, charactersPage, countCharacters)
+
                            )
                    );
                }
        );
-       app.get("/game-set-actions/:gameset_id/create", ctx -> ctx.html(
+       app.get("/game-set-actions/:gameset_id/manage", ctx -> ctx.html(
             form(
                 nestedMultiSelectFormControl("Actions", getActions().stream().collect(
                         Collectors.toMap(
@@ -289,14 +298,16 @@ public class GameSetValuesController {
                         )
                     )
                 ),
-                button(attrs(".btn"), "Submit").withType("submit"),
+                button(attrs(".btn"), "Check All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = true);"),
+                button(attrs(".btn.ms-2"), "Uncheck All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = false);"),
+                button(attrs(".btn.ms-2"), "Submit").withType("submit"),
                 cancelFormButton("Cancel")
-            ).withAction("/game-set-values/" + ctx.pathParam("gameset_id") + "/create")
+            ).withAction("/game-set-actions/" + ctx.pathParam("gameset_id") + "/manage")
                 .withMethod("post")
                 .attr("hx-boost", "true")
                 .render()
        ));
-       app.post("/game-set-values/:gameset_id/create", ctx -> {
+       app.post("/game-set-actions/:gameset_id/manage", ctx -> {
             Main.jdbi.withHandle(handle -> {
                 if (ctx.formParamMap().containsKey("actions")) {
                     handle.createUpdate("""
@@ -333,7 +344,7 @@ public class GameSetValuesController {
             });
             ctx.redirect("/game-set-values/" + ctx.pathParam("gameset_id"));
        });
-       app.get("/game-set-characters/:gameset_id/create", ctx -> ctx.html(
+       app.get("/game-set-characters/:gameset_id/manage", ctx -> ctx.html(
            form(
                nestedMultiSelectFormControl("Characters", getCharacters().stream().collect(
                    Collectors.toMap(
@@ -352,14 +363,16 @@ public class GameSetValuesController {
                    )
                                             )
                ),
-               button(attrs(".btn"), "Submit").withType("submit"),
+               button(attrs(".btn"), "Check All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = true);"),
+               button(attrs(".btn.ms-2"), "Uncheck All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = false);"),
+               button(attrs(".btn.ms-2"), "Submit").withType("submit"),
                cancelFormButton("Cancel")
-           ).withAction("/game-set-characters/" + ctx.pathParam("gameset_id") + "/create")
+           ).withAction("/game-set-characters/" + ctx.pathParam("gameset_id") + "/manage")
                .withMethod("post")
                .attr("hx-boost", "true")
                .render()
        ));
-       app.post("/game-set-characters/:gameset_id/create", ctx -> {
+       app.post("/game-set-characters/:gameset_id/manage", ctx -> {
            Main.jdbi.withHandle(handle -> {
                if (ctx.formParamMap().containsKey("characters")) {
                    handle.createUpdate("""

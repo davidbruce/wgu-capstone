@@ -74,15 +74,26 @@ public class TableTemplate {
         return tableHeader(title, "Create", route, showButtons, page, count, pageRoute);
     }
 
+    public static ContainerTag tableHeader(String title, String route, boolean showButtons, int page, int count, int offset, String pageRoute) {
+        return tableHeader(title, "Create", route, showButtons, page, count, offset, pageRoute);
+    }
+
     public static ContainerTag tableHeader(String title, String buttonText, String route, boolean showButtons) {
         return tableHeader(title, buttonText, route, showButtons, 0, 0, null);
     }
 
     public static ContainerTag tableHeader(String title, String buttonText, String route, boolean showButtons, int page, int count, String pageRoute) {
+        return tableHeader(title, buttonText, route, showButtons, page, count, 15, pageRoute, null);
+    }
+
+    public static ContainerTag tableHeader(String title, String buttonText, String route, boolean showButtons, int page, int count, int offset, String pageRoute) {
+        return tableHeader(title, buttonText, route, showButtons, page, count, offset, pageRoute, null);
+    }
+    public static ContainerTag tableHeader(String title, String buttonText, String route, boolean showButtons, int page, int count, int offset, String pageRoute, String onclick) {
         return div(
             attrs(".d-flex.justify-content-between.bd-highlight.mb-2"),
             h4(attrs(".p-2.bd-highlight"), title),
-            iff(pageRoute != null, tablePaging(page, count, pageRoute)),
+            iff(pageRoute != null, tablePaging(page, count, offset, pageRoute, onclick)),
             iff(showButtons,
                 div(
                     attrs(".p-2.d-flex.justify-content-center"),
@@ -100,9 +111,9 @@ public class TableTemplate {
             )
         );
     }
-    public static ContainerTag tablePaging(int page, int count, String route) {
+    public static ContainerTag tablePaging(int page, int count, int offset, String route, String onclick) {
         List<DomContent> pages = new ArrayList<>();
-        int maxPage = (int)Math.ceil(count / 15.0);
+        int maxPage = (int)Math.ceil(count / (offset * 1.0));
         int endPage = maxPage;
         if (endPage == 0) {
             endPage = 1;
@@ -133,7 +144,10 @@ public class TableTemplate {
                   a(
                       attrs(".page-link.link-dark"),
                       text("" + i)
-                  ).withHref(route + "?page=" + i)
+                  ).withHref(onclick != null ? "#" : route + "?page=" + i)
+                          .attr(onclick != null ? "onclick" : "",
+                                  onclick != null ? "var searchParams = new URLSearchParams(window.location.search); searchParams.set('" +  onclick  + "','" + i + "');window.location.search = searchParams.toString();"
+                                          : "")
               )
             );
         }
@@ -156,14 +170,20 @@ public class TableTemplate {
                         a(
                             attrs(".page-link.link-dark"),
                             "Start"
-                        ).withHref(route + "?page=" + 1)
+                        ).withHref(onclick != null ? "#" : route + "?page=" + 1)
+                                .attr(onclick != null ? "onclick" : "",
+                                        onclick != null ? "var searchParams = new URLSearchParams(window.location.search); searchParams.set('" +  onclick  + "','" + 1 + "');window.location.search = searchParams.toString();"
+                                                : "")
                     ),
                     li(
                         attrs(".page-item.me-2" + (page == maxPage || maxPage == 0 ? ".disabled" : "")),
                         a(
                             attrs(".page-link.link-dark"),
                             "End"
-                        ).withHref(route + "?page=" + (maxPage))
+                        ).withHref(onclick != null ? "#" : route + "?page=" + (maxPage))
+                                .attr(onclick != null ? "onclick" : "",
+                                        onclick != null ? "var searchParams = new URLSearchParams(window.location.search); searchParams.set('" +  onclick  + "','" + maxPage + "');window.location.search = searchParams.toString();"
+                                                : "")
                     )
                 ).withStyle("margin-bottom: 0")
 

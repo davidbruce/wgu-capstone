@@ -365,3 +365,11 @@ function dispatchChangeEvent (node) {
     node.dispatchEvent(changeEvent);
 }
 
+function setPages(id, param) {
+    document.querySelectorAll(id + " .pagination .page-item .page-link").forEach(link => {
+        var pageParams = new URL(link.href).searchParams;
+        var page = pageParams.get("page");
+        link.setAttribute('onclick', 'var searchParams = new URLSearchParams(window.location.search); searchParams.set("' +  param  + '",' + page.toString() + ');window.location.search = searchParams.toString();');
+        link.href = "#";
+    });
+}
