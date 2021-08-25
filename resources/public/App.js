@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", (event) => {
     window.simulations = 0;
+    window.removeDisabled = true;
     window.maxSimulations = () => document.getElementsByName("number_of_simulations")[0].value;
     window.progressbar = () => document.getElementsByClassName("progress-bar")[0];
 });
@@ -90,9 +91,16 @@ class RPGCombatClient {
                   fetch(request)
                         .then(() => {
                             console.log("Save success");
+                            if (window.removeDisabled) {
+                                document.getElementById("game-set-nav")
+                                    .querySelectorAll(".disabled")
+                                    .forEach(element => element.classList.remove("disabled"));
+                                window.removeDisabled = false;
+                            }
                         })
                         .catch(() => {
                             console.log("Failed to save!");
+                            window.simulations--;
                         });
       window.simulations++;
       var percent = Math.trunc((window.simulations / window.maxSimulations()) * 100);
@@ -160,9 +168,7 @@ function getPlayers() {
     }
 }
 
-function changeTurnOrder(G, ctx)  {
 
-}
 var RPGCombat = {
   setup: () => getPlayers(),
  turn: {

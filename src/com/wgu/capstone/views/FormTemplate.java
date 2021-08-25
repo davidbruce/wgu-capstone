@@ -64,6 +64,25 @@ public class FormTemplate {
         );
     }
 
+    public static Tag checkFormControl(String name, SortedMap<String, String> inputs, String value, boolean disabled) {
+        return div(
+                attrs(".mb-3"),
+                each(inputs, (String label, String checkValue) ->
+                        div(
+                                attrs(".form-check"),
+                                input(attrs(".form-check-input"))
+                                        .withName(name)
+                                        .withType("checkbox")
+                                        .withValue(checkValue)
+                                        .attr(checkValue.equals(value) ? "checked" : "", checkValue.equals(value) ? "checked" : "")
+                                        .attr(disabled ? "disabled" : "")
+                                ,
+                                label(attrs(".form-check-label"), label)
+                        )
+                )
+        );
+    }
+
     public static Tag selectFormControl(String label, Map<String, String> options) {
         return selectFormControl(label, options, null, false);
     }
@@ -119,8 +138,7 @@ public class FormTemplate {
         return button(
             attrs(".btn.ms-2"),
             text
-        )
-            .attr("type", "cancel")
+        ) .attr("type", "cancel")
             .attr("onclick",
                 """
                         htmx.removeClass(htmx.find("#form-wrapper"), "show"); 

@@ -5,15 +5,21 @@ import com.wgu.capstone.views.*;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
-import static j2html.TagCreator.text;
 
 public class SimulationsController {
+    public static boolean enableResults(int gameSetId) {
+         return Main.jdbi.withHandle(handle ->  handle.createQuery("""
+                SELECT COUNT(*) FROM Simulations WHERE gameset_id = :gameset_id 
+               """)
+                 .bind("gameset_id", gameSetId)
+                 .mapTo(Integer.class).one()) <= 0;
+    }
+
     public static void createRoutes(Javalin app) {
         app.get("/game-set-simulations/:gameset_id", ctx -> {
             int page = 1;
@@ -94,7 +100,7 @@ public class SimulationsController {
                     }
             ));
             ctx.html(
-                SimulationsView.getHtml(ctx.pathParam("gameset_id"), getGameSet(ctx).get(1), Arrays.asList("Id", "Created", "Winner", "Type", "HP", "Loser", "Type", "HP", "Turns"), data, page, count)
+                SimulationsView.getHtml(ctx.pathParam("gameset_id"), GameSetValuesController.getGameSet(ctx).get(1), Arrays.asList("Id", "Created", "Winner", "Type", "HP", "Loser", "Type", "HP", "Turns"), data, page, count)
             );
         });
         app.get("/game-set-simulations/:gameset_id/details/:simulation_id", ctx -> {
@@ -198,7 +204,7 @@ public class SimulationsController {
                             false,
                             div(
                                     attrs(".rounded.p-3"),
-                                    GameSetNavView.gameSetNav(getGameSet(ctx).get(1), ctx.pathParam("gameset_id"), 1)
+                                    GameSetNavView.gameSetNav(GameSetValuesController.getGameSet(ctx).get(1), ctx.pathParam("gameset_id"), 1)
                             ),
                             div(
                                     attrs(".d-flex.mb-auto"),
@@ -276,25 +282,4 @@ public class SimulationsController {
         );
     }
 
-    private static List<String> getGameSet(Context ctx) {
-        List<String> gameSet = Main.jdbi.withHandle(
-                handle -> {
-                    return handle.createQuery("""
-                            SELECT gs.id,
-                             gs.name
-                             FROM GameSets gs 
-                             WHERE gs.id = :gameset_id
-                        """)
-                            .bind("gameset_id", ctx.pathParam("gameset_id"))
-                            .map(((rs, context) ->
-                                    Arrays.asList(
-                                            rs.getString("id"),
-                                            rs.getString("name")
-                                    )
-                            ))
-                            .list().get(0);
-                }
-        );
-        return gameSet;
-    }
 }

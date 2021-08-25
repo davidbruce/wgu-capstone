@@ -1,6 +1,7 @@
 package com.wgu.capstone.views;
 
 import com.wgu.capstone.Main;
+import com.wgu.capstone.controllers.GameSetsController;
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
@@ -23,6 +24,7 @@ public class MainTemplate {
                 link().withRel("shortcut icon").withType("icon/x-icon").withHref("/favicon.ico"),
                 link().withRel("stylesheet").withHref("/bootstrap.min.css"),
                 link().withRel("stylesheet").withHref("/bootstrap-icons-1.5.0/bootstrap-icons.css"),
+                link().withRel("stylesheet").withHref("/Chart.min.css"),
                 link().withRel("stylesheet").withHref("/stylesheet.css")
             ),
             TagCreator.body(
@@ -53,11 +55,15 @@ public class MainTemplate {
             ),
             script().withSrc("/htmx.min.js"),
             script().withSrc("/bootstrap.bundle.min.js"),
+            script().withSrc("/smr.min.js"),
+            script().withSrc("/regression.min.js"),
+            script().withSrc("/chart.min.js"),
             script().withType("module").withSrc("/App.js")
         ));
     }
 
     static ContainerTag sidebar(String route) {
+        int dashboardId = GameSetsController.getFavorite();
         return div(
             attrs("#sidebar.d-flex.flex-column.p-3.bg-white.shadow"),
             a(
@@ -86,8 +92,8 @@ public class MainTemplate {
                             )
                     ),
                     hr(),
-                    sidebarLi(".mt-2.nav-link.link-dark", "bi-speedometer2", "Dashboard", "/game-sets"),
-                    sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "game-sets" , ".active", ".border"), "bi-sliders", "Game Sets", "/game-sets"),
+                    sidebarLi(".mt-2.nav-link.link-dark.border", "bi-speedometer2", "Dashboard", "/game-set-dashboard/" + dashboardId, dashboardId == 0),
+                sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "game-sets" , ".active", ".border"), "bi-sliders", "Game Sets", "/game-sets"),
                     sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route == "types" , ".active", ".border"), "bi-table", "Types", "/types"),
                     sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route.contains("action") , ".active", ".border"), "bi-hurricane", "Actions", "/actions"),
                     sidebarLi(".mt-2.nav-link.link-dark" + iffElse(route.contains("character") , ".active", ".border"), "bi-person-circle", "Characters", "/characters")
@@ -104,10 +110,14 @@ public class MainTemplate {
         ).withStyle("min-width: 237px");
     }
 
+
     static ContainerTag sidebarLi(String attrs, String icon, String text, String href) {
+        return sidebarLi(attrs, icon, text, href, false);
+    }
+    static ContainerTag sidebarLi(String attrs, String icon, String text, String href, boolean disabled) {
         return li(
                 a(
-                    attrs(attrs + ".d-flex.justify-content-center"),
+                    attrs(attrs + ".d-flex.justify-content-center" + (disabled ? ".disabled" : "")),
                     div(
                         attrs(".wrapper"),
                         i(attrs(".bi.me-2." + icon)),

@@ -8,8 +8,6 @@ import org.jdbi.v3.sqlite3.SQLitePlugin;
 import static j2html.TagCreator.*;
 
 import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
@@ -147,6 +145,7 @@ public class Main {
         GameSetsController.createRoutes(app);
         GameSetValuesController.createRoutes(app);
         SimulationsController.createRoutes(app);
+        DashboardController.createRoutes(app);
         actionSets(app);
     }
 

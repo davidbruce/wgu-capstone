@@ -8,6 +8,7 @@ import com.wgu.capstone.views.GameSetCharactersView;
 import com.wgu.capstone.views.GameSetNavView;
 import com.wgu.capstone.views.MainTemplate;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
@@ -236,14 +237,14 @@ public class GameSetValuesController {
                                            attrs(".row.g-3"),
                                            div(
                                                    attrs(".col-auto"),
-                                                   textFormControl("Number of Simulations", "Number of simluations", "50")
+                                                   textFormControl("Number of Simulations", "Number of simluations", "500")
                                            ),
                                            div(
                                                    attrs(".col-auto"),
                                                    div(
                                                            attrs(".mb-3"),
                                                            label("Run Simulation Button").withStyle("visibility:hidden;"),
-                                                           button(attrs(".btn.form-control"),
+                                                           button(attrs(".btn.form-control" + (countActions > 0 && countCharacters > 0 ? "" : ".disabled")),
                                                                    div(attrs(".wrapper"),
                                                                            i(attrs(".bi.bi-joystick.me-2")),
                                                                            text("Run Simulations"))).attr("onClick", "window.resetGame()")
@@ -280,33 +281,44 @@ public class GameSetValuesController {
                    );
                }
        );
-       app.get("/game-set-actions/:gameset_id/manage", ctx -> ctx.html(
-            form(
-                nestedMultiSelectFormControl("Actions", getActions().stream().collect(
-                        Collectors.toMap(
-                            (List<String> item) -> item.get(1) +
-                                span(attrs(".badge.rounded-pill.bg-primary.ms-2"), item.get(2)).render() +
-                                span(attrs(".badge.rounded-pill.bg-secondary.ms-2"), item.get(3)).render() +
-                                span(attrs(".ms-4"), "ID: " + item.get(4)).render() +
-                                span(attrs(".ms-4"), "Damage: " + item.get(5)).render() +
-                                span(attrs(".ms-4"), "Accuracy: " + item.get(6)).render() +
-                                span(attrs(".ms-4"), "Effect: " + item.get(7)).render()
-                            ,
-                            (List<String> item) -> item.get(0) + "-" + item.get(4),
-                            (x, y) -> y,
-                            LinkedHashMap::new
-                        )
-                    )
-                ),
-                button(attrs(".btn"), "Check All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = true);"),
-                button(attrs(".btn.ms-2"), "Uncheck All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = false);"),
-                button(attrs(".btn.ms-2"), "Submit").withType("submit"),
-                cancelFormButton("Cancel")
-            ).withAction("/game-set-actions/" + ctx.pathParam("gameset_id") + "/manage")
-                .withMethod("post")
-                .attr("hx-boost", "true")
-                .render()
-       ));
+       app.get("/game-set-actions/:gameset_id/manage", ctx -> {
+           int countSimulations = Main.jdbi.withHandle(
+                   handle -> handle.select("""
+                                           SELECT COUNT(*) as count FROM Simulations 
+                                           WHERE gameset_id = :gameset_id """)
+                           .bind("gameset_id", ctx.pathParam("gameset_id"))
+                           .mapTo(Integer.class)
+                           .one()
+           );
+           ctx.html(
+                   form(
+                           nestedMultiSelectFormControl("Actions", getActions().stream().collect(
+                                   Collectors.toMap(
+                                           (List<String> item) -> item.get(1) +
+                                                   span(attrs(".badge.rounded-pill.bg-primary.ms-2"), item.get(2)).render() +
+                                                   span(attrs(".badge.rounded-pill.bg-secondary.ms-2"), item.get(3)).render() +
+                                                   span(attrs(".ms-4"), "ID: " + item.get(4)).render() +
+                                                   span(attrs(".ms-4"), "Damage: " + item.get(5)).render() +
+                                                   span(attrs(".ms-4"), "Accuracy: " + item.get(6)).render() +
+                                                   span(attrs(".ms-4"), "Effect: " + item.get(7)).render()
+                                           ,
+                                           (List<String> item) -> item.get(0) + "-" + item.get(4),
+                                           (x, y) -> y,
+                                           LinkedHashMap::new
+                                   )
+                                   )
+                           ),
+                           button(attrs(".btn" + (countSimulations > 0 ? ".disabled" : "")), "Check All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = true);"),
+                           button(attrs(".btn.ms-2" + (countSimulations > 0 ? ".disabled" : "")), "Uncheck All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = false);"),
+                           button(attrs(".btn.ms-2" + (countSimulations > 0 ? ".disabled" : "")), "Submit").withType("submit"),
+                           cancelFormButton("Cancel")
+                   )
+                           .withAction("/game-set-actions/" + ctx.pathParam("gameset_id") + "/manage")
+                           .withMethod("post")
+                           .attr("hx-boost", "true")
+                           .render()
+           );
+       });
        app.post("/game-set-actions/:gameset_id/manage", ctx -> {
             Main.jdbi.withHandle(handle -> {
                 if (ctx.formParamMap().containsKey("actions")) {
@@ -319,15 +331,16 @@ public class GameSetValuesController {
                         .bindList("actions", ctx.formParamMap().get("actions"))
                         .execute();
                     handle.createUpdate(""" 
-                                            insert into GameSetActions (gameset_id, action_id, actionvalue_id) 
-                                            SELECT :gameset_id, av.action_id, av.id 
-                                            FROM ActionValues av
-                                            WHERE av.action_id || '-' || av.id IN (<actions>)
-                                            AND NOT EXISTS ( 
-                                                SELECT 1 FROM GameSetActions 
-                                                WHERE action_id = av.action_id AND actionvalue_id = av.id 
-                                            )
-                                            """)
+                            insert into GameSetActions (gameset_id, action_id, actionvalue_id) 
+                            SELECT :gameset_id, av.action_id, av.id 
+                            FROM ActionValues av
+                            WHERE av.action_id || '-' || av.id IN (<actions>)
+                            AND NOT EXISTS ( 
+                                SELECT 1 FROM GameSetActions gsa
+                                WHERE gsa.action_id = av.action_id AND gsa.actionvalue_id = av.id
+                                AND gsa.gameset_id = :gameset_id
+                            )
+                            """)
                         .bind("gameset_id", Integer.parseInt(ctx.pathParam("gameset_id")))
                         .bindList("actions", ctx.formParamMap().get("actions"))
                         .execute();
@@ -344,34 +357,44 @@ public class GameSetValuesController {
             });
             ctx.redirect("/game-set-values/" + ctx.pathParam("gameset_id"));
        });
-       app.get("/game-set-characters/:gameset_id/manage", ctx -> ctx.html(
-           form(
-               nestedMultiSelectFormControl("Characters", getCharacters().stream().collect(
-                   Collectors.toMap(
-                       (List<String> item) -> item.get(1) +
-                           span(attrs(".badge.rounded-pill.bg-primary.ms-2"), item.get(2)).render() +
-                           span(attrs(".ms-2"), "HP: " + item.get(4)).render() +
-                           span(attrs(".ms-2"), "Phy Atk: " + item.get(5)).render() +
-                           span(attrs(".ms-2"), "Mag Atk: " + item.get(6)).render() +
-                           span(attrs(".ms-2"), "Phy Def: " + item.get(7)).render() +
-                           span(attrs(".ms-2"), "Mag Def: " + item.get(8)).render() +
-                           span(attrs(".ms-2"), "Speed:  " + item.get(9)).render()
-                       ,
-                       (List<String> item) -> item.get(0) + "-" + item.get(3),
-                       (x, y) -> y,
-                       LinkedHashMap::new
-                   )
-                                            )
-               ),
-               button(attrs(".btn"), "Check All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = true);"),
-               button(attrs(".btn.ms-2"), "Uncheck All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = false);"),
-               button(attrs(".btn.ms-2"), "Submit").withType("submit"),
-               cancelFormButton("Cancel")
-           ).withAction("/game-set-characters/" + ctx.pathParam("gameset_id") + "/manage")
-               .withMethod("post")
-               .attr("hx-boost", "true")
-               .render()
-       ));
+       app.get("/game-set-characters/:gameset_id/manage", ctx -> {
+           int countSimulations = Main.jdbi.withHandle(
+                   handle -> handle.select("""
+                                   SELECT COUNT(*) as count FROM Simulations 
+                                   WHERE gameset_id = :gameset_id """)
+                           .bind("gameset_id", ctx.pathParam("gameset_id"))
+                           .mapTo(Integer.class)
+                           .one()
+           );
+           ctx.html(
+                           form(
+                                   nestedMultiSelectFormControl("Characters", getCharacters().stream().collect(
+                                           Collectors.toMap(
+                                                   (List<String> item) -> item.get(1) +
+                                                           span(attrs(".badge.rounded-pill.bg-primary.ms-2"), item.get(2)).render() +
+                                                           span(attrs(".ms-2"), "HP: " + item.get(4)).render() +
+                                                           span(attrs(".ms-2"), "Phy Atk: " + item.get(5)).render() +
+                                                           span(attrs(".ms-2"), "Mag Atk: " + item.get(6)).render() +
+                                                           span(attrs(".ms-2"), "Phy Def: " + item.get(7)).render() +
+                                                           span(attrs(".ms-2"), "Mag Def: " + item.get(8)).render() +
+                                                           span(attrs(".ms-2"), "Speed:  " + item.get(9)).render()
+                                                   ,
+                                                   (List<String> item) -> item.get(0) + "-" + item.get(3),
+                                                   (x, y) -> y,
+                                                   LinkedHashMap::new
+                                           )
+                                           )
+                                   ),
+                                   button(attrs(".btn" + (countSimulations > 0 ? ".disabled" : "")), "Check All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = true);"),
+                                   button(attrs(".btn.ms-2" + (countSimulations > 0 ? ".disabled" : "")), "Uncheck All").withType("button").attr("onclick", "document.querySelectorAll('.multi-check input').forEach(box => box.checked = false);"),
+                                   button(attrs(".btn.ms-2" + (countSimulations > 0 ? ".disabled" : "")), "Submit").withType("submit"),
+                                   cancelFormButton("Cancel")
+                                                   ).withAction("/game-set-characters/" + ctx.pathParam("gameset_id") + "/manage")
+                                                           .withMethod("post")
+                                                           .attr("hx-boost", "true")
+                                                           .render()
+               );
+           });
        app.post("/game-set-characters/:gameset_id/manage", ctx -> {
            Main.jdbi.withHandle(handle -> {
                if (ctx.formParamMap().containsKey("characters")) {
@@ -389,8 +412,9 @@ public class GameSetValuesController {
                                             FROM CharacterValues cv
                                             WHERE cv.character_id || '-' || cv.id IN (<characters>)
                                             AND NOT EXISTS ( 
-                                                SELECT 1 FROM GameSetCharacters 
-                                                WHERE character_id = cv.character_id AND charactervalue_id = cv.id 
+                                                SELECT 1 FROM GameSetCharacters gsc 
+                                                WHERE gsc.character_id = cv.character_id AND gsc.charactervalue_id = cv.id 
+                                                AND gsc.gameset_id = :gameset_id
                                             )
                                             """)
                        .bind("gameset_id", Integer.parseInt(ctx.pathParam("gameset_id")))
@@ -535,5 +559,27 @@ public class GameSetValuesController {
            );
            ctx.result("Success!");
        });
+    }
+
+    public static List<String> getGameSet(Context ctx) {
+        List<String> gameSet = Main.jdbi.withHandle(
+                handle -> {
+                    return handle.createQuery("""
+                            SELECT gs.id,
+                             gs.name
+                             FROM GameSets gs 
+                             WHERE gs.id = :gameset_id
+                        """)
+                            .bind("gameset_id", ctx.pathParam("gameset_id"))
+                            .map(((rs, context) ->
+                                    Arrays.asList(
+                                            rs.getString("id"),
+                                            rs.getString("name")
+                                    )
+                            ))
+                            .list().get(0);
+                }
+        );
+        return gameSet;
     }
 }
