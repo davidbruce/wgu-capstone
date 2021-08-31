@@ -14,7 +14,6 @@ import static j2html.TagCreator.*;
 public class DashboardController {
     public static void createRoutes(Javalin app) {
         app.get("/game-set-dashboard/:gameset_id", ctx -> {
-
             int games = Main.jdbi.withHandle(
                     handle ->
                         handle.createQuery("""
@@ -107,13 +106,6 @@ public class DashboardController {
                                 div(
                                         attrs(".d-flex.col.rounded.p-3"),
                                         canvas(attrs("#character-win-rate-by-type"))
-                                )
-                        ),
-                        div(
-                                div(
-                                        attrs(".rounded.p-3"),
-                                        canvas(attrs("#regression"))
-
                                 )
                         ),
                         div(
@@ -266,55 +258,6 @@ public class DashboardController {
             );
             ObjectMapper mapper = new ObjectMapper();
             ctx.json(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(winrates));
-        });
-
-        app.get("/game-set-dashboard/:gameset_id/stats-regression", ctx -> {
-            Object data = Main.jdbi.withHandle(
-                    handle ->
-                            handle.createQuery("""
-                          SELECT name, type, phy_attack, mag_attack, phy_defense, mag_defense, speed, hp, total_stats,
-                           (phy_attack + mag_attack + speed) as offense,
-                           (hp + phy_defense + mag_defense) as defense, 
-                           (games_won * 1.0 / (games_won + games_lost)) * 100 as winrate FROM (
-                            SELECT -- character type win rates 
-                            c.name,
-                            t.name as type,
-                            phy_attack + mag_attack + phy_defense + mag_defense + speed + hp as total_stats,
-                            phy_attack, mag_attack, phy_defense, mag_defense, speed, hp,
-                            COUNT(sc.winner) FILTER (WHERE sc.winner = 1) as games_won,
-                            COUNT(sc.winner) FILTER (WHERE sc.winner = 0) as games_lost 
-                            FROM SimulationCharacters sc
-                            INNER JOIN GameSetCharacters gsc ON sc.gameSetCharacter_id = gsc.id
-                            INNER JOIN "Characters" c ON gsc.character_id = c.id
-                            INNER JOIN CharacterValues cv ON gsc.charactervalue_id = cv.id
-                            INNER JOIN Types t ON c.type_id = t.id
-                            WHERE gsc.gameset_id = :gameset_id
-                            GROUP BY c.name 
-                            ) 
-                                    """)
-                                    .bind("gameset_id", ctx.pathParam("gameset_id"))
-                                    .map(((rs, context) ->
-                                            new HashMap<String, Object>() {
-                                                {
-                                                    put("name", rs.getString("name"));
-                                                    put("type", rs.getString("type"));
-                                                    put("total_stats", rs.getInt("total_stats"));
-                                                    put("offense", rs.getInt("offense"));
-                                                    put("defense", rs.getInt("defense"));
-                                                    put("winrate", rs.getDouble("winrate"));
-                                                    put("hp", rs.getString("hp"));
-                                                    put("phy_attack", rs.getString("phy_attack"));
-                                                    put("mag_attack", rs.getString("mag_attack"));
-                                                    put("phy_defense", rs.getString("phy_defense"));
-                                                    put("mag_defense", rs.getString("mag_defense"));
-                                                    put("speed", rs.getString("speed"));
-                                                }
-                                            }
-                                    ))
-                                    .list()
-            );
-            ObjectMapper mapper = new ObjectMapper();
-            ctx.json(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(data));
         });
     }
 }

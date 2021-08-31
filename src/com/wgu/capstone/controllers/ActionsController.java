@@ -60,9 +60,9 @@ public class ActionsController {
         );
         app.get("/actions/create", ctx -> ctx.html(
                 form(
-                    textFormControl("Name", "Name of the move."),
+                    textFormControl("Name", "Name of the move.", true),
                     selectFormControl("Type", Main.types.stream().collect(Collectors.toMap((List<String> item) -> item.get(1), (List<String> item) -> item.get(0)))),
-                    radioFormControl("category", new TreeMap<>(Map.of("Physical Attack", "0", "Magic Attack", "1"))),
+                    radioFormControl("Category", new TreeMap<>(Map.of("Physical Attack", "0", "Magic Attack", "1")), true),
                     button(attrs(".btn"), "Submit").withType("submit"),
                     cancelFormButton("Cancel")
                 ).withAction("/actions/create")
@@ -82,6 +82,10 @@ public class ActionsController {
             ctx.redirect("/actions");
         });
         app.get("/actions/update/:id", ctx -> {
+                int page = 1;
+                if (ctx.queryParam("page") != null) {
+                    page = Integer.parseInt(ctx.queryParam("page"));
+                }
                 List<String> data = Main.jdbi.withHandle(
                     handle -> {
                         return handle.createQuery("""
@@ -101,18 +105,22 @@ public class ActionsController {
                 );
                 ctx.html(
                     form(
-                        textFormControl("Name", "Name of the move.", data.get(1)),
+                        textFormControl("Name", "Name of the move.", true, data.get(1)),
                         selectFormControl("Type", Main.types.stream().collect(Collectors.toMap((List<String> item) -> item.get(1), (List<String> item) -> item.get(0))), data.get(2)),
-                        radioFormControl("category", new TreeMap<>(Map.of("Physical Attack", "0", "Magic Attack", "1")), data.get(3)),
+                        radioFormControl("Category", new TreeMap<>(Map.of("Physical Attack", "0", "Magic Attack", "1")),true, data.get(3)),
                         button(attrs(".btn"), "Submit Edit").withType("submit"),
                         cancelFormButton("Cancel")
-                    ).withAction("/actions/update/" + ctx.pathParam("id"))
+                    ).withAction("/actions/update/" + ctx.pathParam("id") + "?page=" + page)
                         .withMethod("post")
                         .attr("hx-boost", "true")
                         .render()
                 );
         });
         app.post("/actions/update/:id", ctx -> {
+            int page = 1;
+            if (ctx.queryParam("page") != null) {
+                page = Integer.parseInt(ctx.queryParam("page"));
+            }
             Main.jdbi.withHandle(handle -> {
                 handle.createUpdate("update Actions SET name = :name, type_id = :type_id, category = :category where id = :id")
                     .bind("name", ctx.formParam("name"))
@@ -122,7 +130,7 @@ public class ActionsController {
                     .execute();
                 return null;
             });
-            ctx.redirect("/actions");
+            ctx.redirect("/actions?page=" + page);
         });
         app.get("/actions/delete/:id", ctx -> {
             List<String> data = Main.jdbi.withHandle(
@@ -145,7 +153,7 @@ public class ActionsController {
                 form(
                     textFormControl("Name", "Name of the move.", data.get(1), true),
                     selectFormControl("Type", Main.types.stream().collect(Collectors.toMap((List<String> item) -> item.get(1), (List<String> item) -> item.get(0))), data.get(2), true),
-                    radioFormControl("category", new TreeMap<>(Map.of("Physical Attack", "0", "Magic Attack", "1")), data.get(3), true),
+                    radioFormControl("Category", new TreeMap<>(Map.of("Physical Attack", "0", "Magic Attack", "1")),true , data.get(3), true),
                     button(attrs(".btn"), "Confirm Delete").withType("submit"),
                     cancelFormButton("Cancel")
                 ).withAction("/actions/delete/" + ctx.pathParam("id"))

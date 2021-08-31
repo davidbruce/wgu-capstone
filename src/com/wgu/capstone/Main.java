@@ -145,6 +145,7 @@ public class Main {
         GameSetsController.createRoutes(app);
         GameSetValuesController.createRoutes(app);
         SimulationsController.createRoutes(app);
+        AnalysisController.createRoutes(app);
         DashboardController.createRoutes(app);
         actionSets(app);
     }

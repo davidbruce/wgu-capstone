@@ -12,7 +12,7 @@ public class GameSetCharactersView {
         return div(
                 attrs("#characters-table"),
                 TableTemplate.tableHeader(title, "Manage", "/game-set-characters/" + gameSetId + "/manage", true, page, count, 10, "", "characters-page"),
-                TableTemplate.tableBody(headers, data, null, null)
+                TableTemplate.tableBody(headers, data, null, null, 0)
         );
     }
 }

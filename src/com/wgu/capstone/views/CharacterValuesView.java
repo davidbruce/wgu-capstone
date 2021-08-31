@@ -10,7 +10,7 @@ public class CharacterValuesView {
             ("character-values",
                 div(
                     TableTemplate.tableHeader(title, "/character-values/" + characterId + "/create", true, page, count, "/character-values/" + characterId),
-                    TableTemplate.tableBody(headers, data, null, "/character-values/" + characterId + "/")
+                    TableTemplate.tableBody(headers, data, null, "/character-values/" + characterId + "/", page)
                 )
             );
     }

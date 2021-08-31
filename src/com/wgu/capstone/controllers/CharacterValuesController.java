@@ -83,12 +83,12 @@ public class CharacterValuesController {
         app.get("/character-values/:character_id/create", ctx -> ctx.html(
             form(
                 input().withType("hidden").withValue(ctx.pathParam("character_id")).withName("character_id"),
-                textFormControl("HP", "Amount of Health the character has."),
-                textFormControl("Physical Attack", "Used for calculating damage dealt by Physical moves."),
-                textFormControl("Magic Attack", "Used for calculating damage dealt by Magical moves."),
-                textFormControl("Physical Defense", "Used for calculating damage received by Physical moves."),
-                textFormControl("Magic Defense", "Used for calculating damage received by Magical moves."),
-                textFormControl("Speed", "Used for calculating turn order"),
+                textFormControl("HP", "Amount of Health the character has.", true),
+                textFormControl("Physical Attack", "Used for calculating damage dealt by Physical moves.", true),
+                textFormControl("Magic Attack", "Used for calculating damage dealt by Magical moves.", true),
+                textFormControl("Physical Defense", "Used for calculating damage received by Physical moves.", true),
+                textFormControl("Magic Defense", "Used for calculating damage received by Magical moves.", true),
+                textFormControl("Speed", "Used for calculating turn order", true),
                 button(attrs(".btn"), "Submit").withType("submit"),
                 cancelFormButton("Cancel")
             ).withAction("/character-values/" + ctx.pathParam("character_id") + "/create")
@@ -112,6 +112,10 @@ public class CharacterValuesController {
             ctx.redirect("/character-values/" + ctx.pathParam("character_id"));
         });
         app.get("/character-values/:character_id/update/:id", ctx -> {
+            int page = 1;
+            if (ctx.queryParam("page") != null) {
+                page = Integer.parseInt(ctx.queryParam("page"));
+            }
             List<String> data = Main.jdbi.withHandle(
                 handle -> {
                     return handle.createQuery("""
@@ -136,21 +140,25 @@ public class CharacterValuesController {
             );
             ctx.html(
                 form(
-                    textFormControl("HP", "Amount of Health the character has.", data.get(0)),
-                    textFormControl("Physical Attack", "Used for calculating damage dealt by Physical moves.", data.get(1)),
-                    textFormControl("Magic Attack", "Used for calculating damage dealt by Magical moves.", data.get(2)),
-                    textFormControl("Physical Defense", "Used for calculating damage received by Physical moves.", data.get(3)),
-                    textFormControl("Magic Defense", "Used for calculating damage received by Magical moves.", data.get(4)),
-                    textFormControl("Speed", "Used for calculating turn order", data.get(5)),
+                    textFormControl("HP", "Amount of Health the character has.", true, data.get(0)),
+                    textFormControl("Physical Attack", "Used for calculating damage dealt by Physical moves.", true, data.get(1)),
+                    textFormControl("Magic Attack", "Used for calculating damage dealt by Magical moves.", true, data.get(2)),
+                    textFormControl("Physical Defense", "Used for calculating damage received by Physical moves.", true, data.get(3)),
+                    textFormControl("Magic Defense", "Used for calculating damage received by Magical moves.", true, data.get(4)),
+                    textFormControl("Speed", "Used for calculating turn order", true, data.get(5)),
                     button(attrs(".btn"), "Submit Edit").withType("submit"),
                     cancelFormButton("Cancel")
-                ).withAction("/character-values/" + ctx.pathParam("character_id") + "/update/" + ctx.pathParam("id"))
+                ).withAction("/character-values/" + ctx.pathParam("character_id") + "/update/" + ctx.pathParam("id") + "?page=" + page)
                     .withMethod("post")
                     .attr("hx-boost", "true")
                     .render()
             );
         });
         app.post("/character-values/:character_id/update/:id", ctx -> {
+            int page = 1;
+            if (ctx.queryParam("page") != null) {
+                page = Integer.parseInt(ctx.queryParam("page"));
+            }
             Main.jdbi.withHandle(handle -> {
                 handle.createUpdate("Update CharacterValues Set hp = :hp, phy_attack = :phy_attack, mag_attack = :mag_attack, phy_defense = :phy_defense, mag_defense = :mag_defense, speed = :speed where id = :id")
                     .bind("id", Integer.parseInt(ctx.pathParam("id")))
@@ -163,7 +171,7 @@ public class CharacterValuesController {
                     .execute();
                 return null;
             });
-            ctx.redirect("/character-values/" + ctx.pathParam("character_id"));
+            ctx.redirect("/character-values/" + ctx.pathParam("character_id") + "?page=" + page);
         });
         app.get("/character-values/:character_id/delete/:id", ctx -> {
             List<String> data = Main.jdbi.withHandle(

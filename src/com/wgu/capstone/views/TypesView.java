@@ -11,7 +11,7 @@ public class TypesView {
             ("types",
                 div(
                     TableTemplate.tableHeader("Types", null, false),
-                    TableTemplate.tableBody(headers, data, null, null)
+                    TableTemplate.tableBody(headers, data, null, null, 0)
                 )
             );
     }

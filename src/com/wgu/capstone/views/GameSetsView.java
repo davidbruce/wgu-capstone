@@ -11,7 +11,7 @@ public class GameSetsView {
             ("game-sets",
                 div(
                     TableTemplate.tableHeader("Game Sets", "/game-sets/create", true, page, count, "/game-sets"),
-                    TableTemplate.tableBody(headers, data, "/game-set-values/", "/game-sets/")
+                    TableTemplate.tableBody(headers, data, "/game-set-values/", "/game-sets/", page)
                 )
             );
     }

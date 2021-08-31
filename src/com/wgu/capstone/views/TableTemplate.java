@@ -9,7 +9,7 @@ import java.util.List;
 import static j2html.TagCreator.*;
 
 public class TableTemplate {
-    public static ContainerTag tableBody(List<String> headers, List<List<String>> values, String childLink, String updelLink) {
+    public static ContainerTag tableBody(List<String> headers, List<List<String>> values, String childLink, String updelLink, int page) {
         return table(
             attrs(".table.table-sm.table-hover"),
             thead(
@@ -37,7 +37,7 @@ public class TableTemplate {
                                                         htmx.addClass(htmx.find("#form-wrapper"), "show"); 
                                                         htmx.addClass(htmx.find("#form-wrapper"), "p-4"); 
                                                       """)
-                                            .attr("hx-get", updelLink + "update/" + row.get(0))
+                                            .attr("hx-get", updelLink + "update/" + row.get(0) + "?page=" + page)
                                             .attr("hx-target", "#form")
                                             .attr("hx-swap", "innerHTML"),
                                         button(

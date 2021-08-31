@@ -79,8 +79,8 @@ public class ActionValuesController {
         );
         app.get("/action-values/:action_id/create", ctx -> ctx.html(
             form(
-                textFormControl("Damage", "Amount of damage the move will do."),
-                textFormControl("Accuracy", "50 to 100 value with -1 for never miss."),
+                textFormControl("Damage", "Amount of damage the move will do.", true),
+                textFormControl("Accuracy", "50 to 100 value with -1 for never miss.", true),
                 textFormControl("Effect", "DSL String for different possible effects. Example: MA:1;MD:-1"),
                 button(attrs(".btn"), "Submit").withType("submit"),
                 cancelFormButton("Cancel")
@@ -102,6 +102,10 @@ public class ActionValuesController {
             ctx.redirect("/action-values/" + ctx.pathParam("action_id"));
         });
         app.get("/action-values/:action_id/update/:id", ctx -> {
+            int page = 1;
+            if (ctx.queryParam("page") != null) {
+                page = Integer.parseInt(ctx.queryParam("page"));
+            }
             List<String> data = Main.jdbi.withHandle(
                 handle -> {
                     return handle.createQuery("""
@@ -120,18 +124,22 @@ public class ActionValuesController {
             );
             ctx.html(
                 form(
-                    textFormControl("Damage", "Amount of damage the move will do.", data.get(0)),
-                    textFormControl("Accuracy", "50 to 100 value with -1 for never miss.", data.get(1)),
+                    textFormControl("Damage", "Amount of damage the move will do.", true, data.get(0)),
+                    textFormControl("Accuracy", "50 to 100 value with -1 for never miss.", true, data.get(1)),
                     textFormControl("Effect", "DSL String for different possible effects. Example: MA:1;MD:-1", data.get(2)),
                     button(attrs(".btn"), "Submit Edit").withType("submit"),
                     cancelFormButton("Cancel")
-                ).withAction("/action-values/" + ctx.pathParam("action_id") + "/update/" + ctx.pathParam("id"))
+                ).withAction("/action-values/" + ctx.pathParam("action_id") + "/update/" + ctx.pathParam("id") + "?page=" + page)
                     .withMethod("post")
                     .attr("hx-boost", "true")
                     .render()
             );
         });
         app.post("/action-values/:action_id/update/:id", ctx -> {
+            int page = 1;
+            if (ctx.queryParam("page") != null) {
+                page = Integer.parseInt(ctx.queryParam("page"));
+            }
             Main.jdbi.withHandle(handle -> {
                 handle.createUpdate("Update ActionValues set damage = :damage, accuracy = :accuracy, effect = :effect where id = :id")
                     .bind("id", Integer.parseInt(ctx.pathParam("id")))
@@ -141,7 +149,7 @@ public class ActionValuesController {
                     .execute();
                 return null;
             });
-            ctx.redirect("/action-values/" + ctx.pathParam("action_id"));
+            ctx.redirect("/action-values/" + ctx.pathParam("action_id") + "?page=" + page);
         });
         app.get("/action-values/:action_id/delete/:id", ctx -> {
             List<String> data = Main.jdbi.withHandle(

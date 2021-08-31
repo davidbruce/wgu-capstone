@@ -55,7 +55,7 @@ public class CharactersController {
         );
         app.get("/characters/create", ctx -> ctx.html(
             form(
-                textFormControl("Name", "Name of the move."),
+                textFormControl("Name", "Name of the move.", true),
                 selectFormControl("Type", Main.types.stream().collect(Collectors.toMap((List<String> item) -> item.get(1), (List<String> item) -> item.get(0)))),
                 button(attrs(".btn"), "Submit").withType("submit"),
                 cancelFormButton("Cancel")
@@ -75,6 +75,10 @@ public class CharactersController {
             ctx.redirect("/characters");
         });
         app.get("/characters/update/:id", ctx -> {
+            int page = 1;
+            if (ctx.queryParam("page") != null) {
+                page = Integer.parseInt(ctx.queryParam("page"));
+            }
             List<String> data = Main.jdbi.withHandle(
                 handle -> {
                     return handle.createQuery("SELECT * FROM Characters where id = :id")
@@ -90,17 +94,21 @@ public class CharactersController {
             );
             ctx.html(
             form(
-                textFormControl("Name", "Name of the move.", data.get(0)),
+                textFormControl("Name", "Name of the move.", true, data.get(0)),
                 selectFormControl("Type", Main.types.stream().collect(Collectors.toMap((List<String> item) -> item.get(1), (List<String> item) -> item.get(0))), data.get(1)),
                 button(attrs(".btn"), "Submit Edit").withType("submit"),
                 cancelFormButton("Cancel")
-            ).withAction("/characters/update/" + ctx.pathParam("id"))
+            ).withAction("/characters/update/" + ctx.pathParam("id") + "?page=" + page)
                 .withMethod("post")
                 .attr("hx-boost", "true")
                 .render()
             );
         });
         app.post("/characters/update/:id", ctx -> {
+            int page = 1;
+            if (ctx.queryParam("page") != null) {
+                page = Integer.parseInt(ctx.queryParam("page"));
+            }
             Main.jdbi.withHandle(handle -> {
                 handle.createUpdate("Update Characters SET name = :name, type_id = :type_id where id = :id")
                     .bind("id", ctx.pathParam("id"))
@@ -109,7 +117,7 @@ public class CharactersController {
                     .execute();
                 return null;
             });
-            ctx.redirect("/characters");
+            ctx.redirect("/characters" + "?page=" + page);
         });
         app.get("/characters/delete/:id", ctx -> {
             List<String> data = Main.jdbi.withHandle(

@@ -12,7 +12,7 @@ public class GameSetActionsView {
         return div(
                 attrs("#actions-table"),
                 TableTemplate.tableHeader(title, "Manage", "/game-set-actions/" + gameSetId + "/manage", true, page, count, 10, "", "actions-page"),
-                TableTemplate.tableBody(headers, data, null, null)
+                TableTemplate.tableBody(headers, data, null, null, 0)
             );
     }
 }

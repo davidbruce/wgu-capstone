@@ -2,7 +2,6 @@ package com.wgu.capstone.views;
 
 import j2html.tags.Tag;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -16,49 +15,58 @@ public class FormTemplate {
     public static Tag textFormControl(String label, String placeholder) {
         return textFormControl(label, placeholder, null, false, false);
     }
-
+    public static Tag textFormControl(String label, String placeholder, boolean required) {
+        return textFormControl(label, placeholder, required, null, false, false);
+    }
+    public static Tag textFormControl(String label, String placeholder, boolean required, String value) {
+        return textFormControl(label, placeholder, required, value, false, false);
+    }
     public static Tag textFormControl(String label, String placeholder, String value) {
         return textFormControl(label, placeholder, value, false, false);
     }
-
     public static Tag textFormControl(String label, String placeholder, String value, boolean disabled) {
         return textFormControl(label, placeholder, value, disabled, false);
     }
-
     public static Tag textFormControl(String label, String placeholder, String value, boolean disabled, boolean hideLabel) {
+        return textFormControl(label, placeholder, false, value, disabled, hideLabel);
+    }
+    public static Tag textFormControl(String label, String placeholder, boolean required, String value, boolean disabled, boolean hideLabel) {
         return div(
                 attrs(".mb-3"),
-                label(label).withClass(hideLabel ? "visually-hidden" : ""),
+                label(label + (required ? " *" : "")).withClass(hideLabel ? "visually-hidden" : ""),
                 input(attrs(".form-control"))
                         .withName(label.toLowerCase().replace(' ', '_'))
                         .withPlaceholder(placeholder)
                         .withValue(value)
                         .attr(disabled ? "disabled" : "")
+                        .attr(required ? "required" : "")
         );
     }
 
-    public static Tag radioFormControl(String name, SortedMap<String, String> inputs) {
-        return radioFormControl(name, inputs, null, false);
+    public static Tag radioFormControl(String label, SortedMap<String, String> inputs, boolean required) {
+        return radioFormControl(label, inputs, required, null, false);
     }
 
-    public static Tag radioFormControl(String name, SortedMap<String, String> inputs, String value) {
-        return radioFormControl(name, inputs, value, false);
+    public static Tag radioFormControl(String label, SortedMap<String, String> inputs, boolean required, String value) {
+        return radioFormControl(label, inputs, required, value,false);
     }
 
-    public static Tag radioFormControl(String name, SortedMap<String, String> inputs, String value, boolean disabled) {
+    public static Tag radioFormControl(String label, SortedMap<String, String> inputs, boolean required, String value, boolean disabled) {
         return div(
             attrs(".mb-3"),
-            each(inputs, (String label, String radioValue) ->
+            label(label + (required ? " *" : "")),
+            each(inputs, (String name, String radioValue) ->
                 div(
                     attrs(".form-check"),
                     input(attrs(".form-check-input"))
-                        .withName(name)
+                        .withName(label.toLowerCase().replace(' ', '_'))
                         .withType("radio")
                         .withValue(radioValue)
                         .attr(radioValue.equals(value) ? "checked" : "", radioValue.equals(value) ? "checked" : "")
                         .attr(disabled ? "disabled" : "")
+                        .attr(required ? "required" : "")
                     ,
-                    label(attrs(".form-check-label"), label)
+                    label(attrs(".form-check-label"), name)
                 )
             )
         );

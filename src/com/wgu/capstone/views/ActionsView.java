@@ -12,7 +12,7 @@ public class ActionsView {
             ("actions",
                  div(
                      TableTemplate.tableHeader("Actions", "/actions/create", true, page, count, "/actions"),
-                     TableTemplate.tableBody(headers, data, "/action-values/", "/actions/")
+                     TableTemplate.tableBody(headers, data, "/action-values/", "/actions/", page)
                  )
             );
     }

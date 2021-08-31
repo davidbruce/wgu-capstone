@@ -11,7 +11,7 @@ public class ActionValuesView {
             ("action-values",
                 div(
                     TableTemplate.tableHeader(title, "/action-values/" + actionId + "/create", true, page, count, "/action-values/" + actionId),
-                    TableTemplate.tableBody(headers, data, null, "/action-values/" + actionId + "/")
+                    TableTemplate.tableBody(headers, data, null, "/action-values/" + actionId + "/", page)
                 )
             );
     }

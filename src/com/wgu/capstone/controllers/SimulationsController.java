@@ -213,15 +213,15 @@ public class SimulationsController {
                                             div(
                                                    attrs(".rounded.p-3"),
                                                     TableTemplate.tableHeader("Winner", null, false),
-                                                    TableTemplate.tableBody(Arrays.asList("Name", "Type", "End HP"), winner, null, null)
+                                                    TableTemplate.tableBody(Arrays.asList("Name", "Type", "End HP"), winner, null, null, 0)
                                             ),
                                             div(
                                                     attrs(".rounded.p-3.mt-3"),
-                                                    TableTemplate.tableBody(Arrays.asList("Value ID", "HP", "Phy Atk", "Mag Atk", "Phy Atk", "Mag Def", "Spd"), winnerValues, null, null)
+                                                    TableTemplate.tableBody(Arrays.asList("Value ID", "HP", "Phy Atk", "Mag Atk", "Phy Atk", "Mag Def", "Spd"), winnerValues, null, null, 0)
                                             ),
                                             div(
                                                     attrs(".actions-list.rounded.p-3.mt-3"),
-                                                    TableTemplate.tableBody(Arrays.asList("Name", "Type", "Value ID", "Damage", "Effect", "Uses"), actions.subList(4, 8), null, null)
+                                                    TableTemplate.tableBody(Arrays.asList("Name", "Type", "Value ID", "Damage", "Effect", "Uses"), actions.subList(4, 8), null, null, 0)
 
                                             )
                                     ),
@@ -230,22 +230,22 @@ public class SimulationsController {
                                             div(
                                                     attrs(".rounded.p-3"),
                                                     TableTemplate.tableHeader("Loser", null, false),
-                                                    TableTemplate.tableBody(Arrays.asList("Name", "Type", "End HP"), loser, null, null)
+                                                    TableTemplate.tableBody(Arrays.asList("Name", "Type", "End HP"), loser, null, null, 0)
                                             ),
                                             div(
                                                     attrs(".rounded.p-3.mt-3"),
-                                                    TableTemplate.tableBody(Arrays.asList("Value ID", "HP", "Phy Atk", "Mag Atk", "Phy Atk", "Mag Def", "Spd"), loserValues, null, null)
+                                                    TableTemplate.tableBody(Arrays.asList("Value ID", "HP", "Phy Atk", "Mag Atk", "Phy Atk", "Mag Def", "Spd"), loserValues, null, null, 0)
                                             ),
                                             div(
                                                     attrs(".actions-list.rounded.p-3.mt-3"),
-                                                    TableTemplate.tableBody(Arrays.asList("Name", "Type", "Value ID", "Damage", "Effect", "Uses"), actions.subList(0, 4), null, null)
+                                                    TableTemplate.tableBody(Arrays.asList("Name", "Type", "Value ID", "Damage", "Effect", "Uses"), actions.subList(0, 4), null, null, 0)
                                             )
                                     )
                             ),
                             div(
                                     attrs(".rounded.p-3"),
                                     TableTemplate.tableHeader("Turns", null, false),
-                                    TableTemplate.tableBody(Arrays.asList("Turn", "Character", "Action", "Damage", "Effect"), turns, null, null)
+                                    TableTemplate.tableBody(Arrays.asList("Turn", "Character", "Action", "Damage", "Effect"), turns, null, null, 0)
                             )
                     )
             );

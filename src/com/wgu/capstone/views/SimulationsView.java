@@ -13,7 +13,7 @@ public class SimulationsView {
                         GameSetNavView.gameSetNav(title, gameSetId, 1),
                         div(
                                 TableTemplate.tableHeader("Simulations", "", false, page, count, 15, "/game-set-simulations/" + gameSetId),
-                                TableTemplate.tableBody(headers, data, "/game-set-simulations/" + gameSetId + "/details/", null)
+                                TableTemplate.tableBody(headers, data, "/game-set-simulations/" + gameSetId + "/details/", null, 0)
                         )
                 );
     }
