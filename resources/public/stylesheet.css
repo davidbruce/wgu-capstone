@@ -23,6 +23,7 @@
     margin-top: 1rem;
 }
 body {
+    zoom: 75%;
     display: flex;
     flex-wrap: nowrap;
     height: 100vh;
@@ -32,6 +33,7 @@ body {
 }
 #body-container {
     overflow: auto;
+    max-width: 1580px;
 }
 .multi-check {
     overflow-y: auto;

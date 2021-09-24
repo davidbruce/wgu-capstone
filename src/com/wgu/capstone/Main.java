@@ -8,9 +8,11 @@ import org.jdbi.v3.sqlite3.SQLitePlugin;
 import static j2html.TagCreator.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class Main {
     public static Jdbi jdbi = null;
@@ -135,8 +137,6 @@ public class Main {
     }
 
     private static void setupControllers(Javalin app) {
-        app.get("/", ctx -> ctx.html(
-            MainTemplate.mainView("home", div("Home!"))));
         ActionsController.createRoutes(app);
         ActionValuesController.createRoutes(app);
         TypesController.createRoutes(app);
@@ -152,9 +152,10 @@ public class Main {
 
     public static void main(String[] args) {
 //        System.out.println("Working Directory = " + System.getProperty("user.dir"));
-        String dbPath = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile().getParent() + "/capstone.db";
-        System.out.println("DB Path: " + dbPath);
 
+        String jarParent = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile().getParent();
+        String dbPath = jarParent + "/database/capstone.db";
+        System.out.println("DB Path: " + dbPath);
 
         Javalin app = Javalin.create(
             config -> {
@@ -176,19 +177,22 @@ public class Main {
                 }
             );
             setupControllers(app);
+
+            try {
+                String os =System.getProperty("os.name").toLowerCase().substring(0, 3);
+                String osArch = System.getProperty("os.arch").toLowerCase();
+                int ui = Runtime.getRuntime().exec(jarParent + "/webview/" + os + "/" + osArch + "/capstone-ui").waitFor();
+                System.exit(ui);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Jar needs to be in same directory as app executable.");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch (SQLException e) {
             // if the error message is "out of memory",
             // it probably means no database file is found
             System.err.println(e.getMessage());
         }
-//        finally {
-//            try {
-//                if (connection != null)
-//                    connection.close();
-//            } catch (SQLException e) {
-//                // connection close failed.
-//                System.err.println(e.getMessage());
-//            }
-//        }
     }
 }

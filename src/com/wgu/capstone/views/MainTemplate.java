@@ -55,7 +55,6 @@ public class MainTemplate {
             ),
             script().withSrc("/htmx.min.js"),
             script().withSrc("/bootstrap.bundle.min.js"),
-            script().withSrc("/smr.min.js"),
             script().withSrc("/regression.min.js"),
             script().withSrc("/chart.min.js"),
             script().withType("module").withSrc("/App.js")

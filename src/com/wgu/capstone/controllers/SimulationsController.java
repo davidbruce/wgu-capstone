@@ -217,7 +217,7 @@ public class SimulationsController {
                                             ),
                                             div(
                                                     attrs(".rounded.p-3.mt-3"),
-                                                    TableTemplate.tableBody(Arrays.asList("Value ID", "HP", "Phy Atk", "Mag Atk", "Phy Atk", "Mag Def", "Spd"), winnerValues, null, null, 0)
+                                                    TableTemplate.tableBody(Arrays.asList("Value ID", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), winnerValues, null, null, 0)
                                             ),
                                             div(
                                                     attrs(".actions-list.rounded.p-3.mt-3"),
@@ -234,7 +234,7 @@ public class SimulationsController {
                                             ),
                                             div(
                                                     attrs(".rounded.p-3.mt-3"),
-                                                    TableTemplate.tableBody(Arrays.asList("Value ID", "HP", "Phy Atk", "Mag Atk", "Phy Atk", "Mag Def", "Spd"), loserValues, null, null, 0)
+                                                    TableTemplate.tableBody(Arrays.asList("Value ID", "HP", "Phy Atk", "Mag Atk", "Phy Def", "Mag Def", "Spd"), loserValues, null, null, 0)
                                             ),
                                             div(
                                                     attrs(".actions-list.rounded.p-3.mt-3"),

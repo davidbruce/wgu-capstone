@@ -286,7 +286,7 @@ function statAnalysisChart(dataType, type) {
 
     var div = document.createElement("div");
     div.classList.add("col");
-    div.classList.add("p-2");
+    div.classList.add("p-4");
     div.classList.add("d-flex");
     div.classList.add("justify-content-between");
 
