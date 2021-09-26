@@ -9,7 +9,7 @@ do
      echo "Building runtime..."
 done
 cp -r database/ target/artifacts/wgu_capstone_jar/database/
-jpackage --java-options  "\"-DdatabasePath=app/database/\"" --java-options "\"-DiconFile=WguCapstone.ico\"" --java-options "\"-XstartOnFirstThread\"" --type "app-image" --name WguCapstone --icon resources/public/favicon.ico --dest dist/mac/arm/ --input target/artifacts/wgu_capstone_jar --main-jar wgu-capstone.jar --main-class com.wgu.capstone.Main --runtime-image runtime/
+jpackage --java-options  "\"-DdatabasePath=\$APPDIR/database\"" --java-options "\"-DiconFile=\$APPDIR/../Resources/WguCapstone.icns\"" --java-options "\"-XstartOnFirstThread\"" --type "app-image" --name WguCapstone --resource-dir macos/ --dest dist/mac/arm/ --input target/artifacts/wgu_capstone_jar --main-jar wgu-capstone.jar --main-class com.wgu.capstone.Main --runtime-image runtime/
 until [ -f "dist/mac/arm/WguCapstone.app/Contents/app/wgu-capstone.jar" ]
 do
      sleep 1

@@ -1,6 +1,5 @@
 package com.wgu.capstone.views;
 
-import com.wgu.capstone.Main;
 import com.wgu.capstone.controllers.GameSetsController;
 import j2html.TagCreator;
 import j2html.tags.ContainerTag;
