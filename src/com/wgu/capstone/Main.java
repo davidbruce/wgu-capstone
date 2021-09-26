@@ -3,6 +3,14 @@ package com.wgu.capstone;
 import com.wgu.capstone.controllers.*;
 import com.wgu.capstone.views.MainTemplate;
 import io.javalin.Javalin;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlite3.SQLitePlugin;
 import static j2html.TagCreator.*;
@@ -151,10 +159,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-//        System.out.println("Working Directory = " + System.getProperty("user.dir"));
-
-        String jarParent = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParentFile().getParent();
-        String dbPath = jarParent + "/database/capstone.db";
+        String dbPath = System.getProperty("databasePath") + "/capstone.db";
         System.out.println("DB Path: " + dbPath);
 
         Javalin app = Javalin.create(
@@ -177,18 +182,31 @@ public class Main {
                 }
             );
             setupControllers(app);
+            Display display = new Display();
+            final Shell shell = new Shell(display);
+            shell.setText("WGU Capstone");
+            shell.setImage(new Image(display, System.getProperty("iconFile")));
+            shell.setLayout(new GridLayout(1, false));
 
+            final Browser browser;
             try {
-                String os =System.getProperty("os.name").toLowerCase().substring(0, 3);
-                String osArch = System.getProperty("os.arch").toLowerCase();
-                int ui = Runtime.getRuntime().exec(jarParent + "/webview/" + os + "/" + osArch + "/capstone-ui").waitFor();
-                System.exit(ui);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Jar needs to be in same directory as app executable.");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                browser = new Browser(shell, SWT.EDGE);
+            } catch (SWTError e) {
+                System.out.println("Could not instantiate Browser: " + e.getMessage());
+                display.dispose();
+                return;
             }
+            browser.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
+
+            shell.setSize(1300, 800);
+            shell.open();
+            browser.setUrl("http://localhost:7001/game-sets/");
+            while (!shell.isDisposed()) {
+                if (!display.readAndDispatch())
+                    display.sleep();
+            }
+            display.dispose();
+            System.exit(0);
         } catch (SQLException e) {
             // if the error message is "out of memory",
             // it probably means no database file is found
