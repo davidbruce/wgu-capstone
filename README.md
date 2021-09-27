@@ -28,4 +28,4 @@ the application via a browser at `http://localhost:7001/game-sets/`
        * The `.app` file can be dragged into the `Application` folder in finder to add to Launchpad.
 1. After the package script completes a `dist` directory will contain the resulting file. 
 
-![Sample Image of Analysis Screen]("./sample.png" "Analysis Screen")
+![Sample Image of Analysis Screen]("sample.png" "Analysis Screen")
